@@ -21,8 +21,8 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = False
-TEST_MODEL_NAME = None # string name e.g. "0368115377_q"(without file extension)
+LEARNING_ON = True
+TEST_MODEL_NAME = None # string name e.g. "0368115377_q"(without file extension) 
 TEST_RANDOM_SEED = 1 
 TEST_N_EPISODES = 1000
 TEST_ANIMATION_ON = True
