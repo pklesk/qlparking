@@ -22,7 +22,7 @@ PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
 LEARNING_ON = True
-TEST_MODEL_NAME = None # string name e.g. "0368115377_q"(without file extension) 
+TEST_MODEL_NAME = None # string name e.g. "0368115377"(without "_q.bin" suffix) 
 TEST_RANDOM_SEED = 1 
 TEST_N_EPISODES = 1000
 TEST_ANIMATION_ON = True
@@ -52,7 +52,7 @@ QL_FPS = int(round(1.0 / QL_DT))
 QL_ANIMATION_ON = True
 QL_ANIMATION_FREQUENCY = 250
 QL_STEERING_GAP_STEPS = 4
-QL_N_EPISODES = 1 * 10**4  
+QL_N_EPISODES = 2 * 10**4  
 QL_EPISODE_TIME_LIMIT = 25.0 # [s]
 QL_COLLECT_EXPERIENCE_PROBABILITY = 1.0
 QL_GAMMA = 0.99
@@ -68,9 +68,9 @@ QL_ORACLE_SWITCH_GAP_EPISODES = 500
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "scene_twosided" 
+QL_SCENE_FUNCTION_NAME = "general_side20" 
 QL_TRANSFORMER = TRANSFORMERS["poly_1"] 
-QL_APPROXIMATOR = APPROXIMATORS["qmlp_small"]
+QL_APPROXIMATOR = APPROXIMATORS["qmlp_large"]
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
 
 # DRAWING CONSTANTS
@@ -372,11 +372,11 @@ def scene_twosided():
         scene = Scene(QL_DT, car, park_place, obstacles)        
     return scene
 
-def scene_general_hard():
+def scene_general_side20():    
     ppfl = np.array([0.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])
     ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
     park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
-    random_shift = np.array([(2 * np.random.rand() - 1) * 20.0, (2 * np.random.rand() - 1) * 20.0])
+    random_shift = np.array([(2 * np.random.rand() - 1) * 10.0, (2 * np.random.rand() - 1) * 10.0])
     random_angle = (2 * np.random.rand() - 1) * 1.0 * np.pi
     start_x = np.array([0.0, 0.0]) 
     car = Car(x=start_x + random_shift, angle=0.5 * np.pi + random_angle)
@@ -418,7 +418,7 @@ if __name__ == "__main__":
         animation_frequency = 1         
     seed_dtype = np.int32    
     epi_seeds = np.random.randint(low=0, high=np.iinfo(seed_dtype).max, dtype=seed_dtype, size=n_episodes)
-    scene_function = globals()[QL_SCENE_FUNCTION_NAME]    
+    scene_function = globals()["scene_" + QL_SCENE_FUNCTION_NAME]    
     first_fit_done = False
     Q = None 
     Q_oracle = None    
@@ -433,10 +433,9 @@ if __name__ == "__main__":
     eb_size = 0
     eb_size_old = 0
     if not LEARNING_ON and TEST_MODEL_NAME:
-        [Q] = unpickle_all(FOLDER_MODELS + TEST_MODEL_NAME + ".bin")
-        model_name = "q_" + ehs
+        [Q] = unpickle_all(FOLDER_MODELS + TEST_MODEL_NAME + "_q.bin")  
     elif LEARNING_ON and QL_INITIAL_MODEL_NAME:
-        [Q] = unpickle_all(FOLDER_MODELS + QL_INITIAL_MODEL_NAME + ".bin")
+        [Q] = unpickle_all(FOLDER_MODELS + QL_INITIAL_MODEL_NAME + "_q.bin")
         first_fit_done = True
         Q_oracle = deepcopy(Q) 
 
