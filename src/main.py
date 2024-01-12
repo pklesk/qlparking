@@ -25,7 +25,7 @@ LEARNING_ON = True
 TEST_MODEL_NAME = None # string name equal to hash code e.g. "0368115377"(without "_q.bin" suffix) 
 TEST_RANDOM_SEED = 1 
 TEST_N_EPISODES = 1000
-TEST_ANIMATION_ON = True
+TEST_ANIMATION_ON = False
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
@@ -67,7 +67,7 @@ QL_ORACLE_SWITCH_GAP_EPISODES = 500
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_pi" 
+QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi" 
 QL_TRANSFORMER = TRANSFORMERS["poly_1"] 
 QL_APPROXIMATOR = APPROXIMATORS["qmlp_small"]
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
@@ -396,6 +396,18 @@ def scene_pp_middle_side_20_angle_twopi():
     scene = Scene(QL_DT, car, park_place, obstacles)
     return scene
 
+def scene_pp_middle_side_40_angle_twopi():    
+    ppfl = np.array([0.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])
+    ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
+    park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
+    random_shift = np.array([(2 * np.random.rand() - 1) * 20.0, (2 * np.random.rand() - 1) * 20.0])
+    random_angle = (2 * np.random.rand() - 1) * 1.0 * np.pi
+    start_x = np.array([0.0, 0.0]) 
+    car = Car(x=start_x + random_shift, angle=0.5 * np.pi + random_angle)
+    obstacles = []
+    scene = Scene(QL_DT, car, park_place, obstacles)
+    return scene
+
 def scene_obstacles_1():
     ppfl = np.array([-14.0, -6.0])    
     ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
@@ -407,7 +419,6 @@ def scene_obstacles_1():
     car = Car(x=np.array([2.0, -6.0 + PARK_PLACE_WIDTH * 0.5]), angle=0.5 * np.pi)
     scene = Scene(QL_DT, car, park_place, obstacles)
     return scene
-
 
 # MAIN
 if __name__ == "__main__":    

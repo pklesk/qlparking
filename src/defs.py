@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_tppflfrblbr2_da"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s_da"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -247,25 +247,29 @@ class Car:
             self.reward_ += -REWARD_PENALTY_COEF_ANGLE * self.angle_distance_ / np.pi      
             self.reward_ += -REWARD_PENALTY_COEF_GUTTER_DISTANCE * self.gutter_distance_                
 
-    def _state_repr_av_tppfb(self):
-        return np.concatenate((np.array([self.angle_ahead_]), self.v_, self.to_park_place_f_, self.to_park_place_b_))
+    def _state_repr_avms_fb(self):
+        v_magnitude_signed = np.sign(self.d_.dot(self.v_)) * self.v_magnitude_
+        return np.concatenate((np.array([self.angle_ahead_, v_magnitude_signed]), self.to_park_place_f_, self.to_park_place_b_))
 
-    def _state_repr_dv_tppfb(self):
+    def _state_repr_dv_fb(self):
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_f_, self.to_park_place_b_))
 
-    def _state_repr_dv_tppfb_ra(self):
-        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_f_, self.to_park_place_b_, np.array([self.distance_, self.angle_distance_])))
+    def _state_repr_dv_flfrblbr(self):
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl_, self.to_park_place_fr_, self.to_park_place_bl_, self.to_park_place_br_))
 
-    def _state_repr_dv_tppflfrblbr_da(self):
-        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl_, self.to_park_place_fr_, self.to_park_place_bl_, self.to_park_place_br_, np.array([self.distance_, self.angle_distance_])))
+    def _state_repr_dv_flfrblbr2s(self):        
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl2_, self.to_park_place_fr2_, self.to_park_place_bl2_, self.to_park_place_br2_))
     
-    def _state_repr_dv_tppflfrblbr2_da(self):        
+    def _state_repr_dv_flfrblbr2s_d(self):        
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl2_, self.to_park_place_fr2_, self.to_park_place_bl2_, self.to_park_place_br2_, np.array([self.distance_])))
+
+    def _state_repr_dv_flfrblbr2s_da(self):        
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl2_, self.to_park_place_fr2_, self.to_park_place_bl2_, self.to_park_place_br2_, np.array([self.distance_, self.angle_distance_])))
 
-    def _state_repr_dv_tppflfrblbr2_dag(self):
+    def _state_repr_dv_flfrblbr2s_dag(self):        
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl2_, self.to_park_place_fr2_, self.to_park_place_bl2_, self.to_park_place_br2_, np.array([self.distance_, self.angle_distance_, self.gutter_distance_])))
 
-    def _state_repr_v_tppflfrblbr2_da_wrd(self):        
+    def _state_repr_v1_flfrblbr2s_da_wrd(self):        
         return np.concatenate((np.array([self.v_[1]]), self.to_park_place_fl2_wrd_, self.to_park_place_fr2_wrd_, self.to_park_place_bl2_wrd_, self.to_park_place_br2_wrd_, np.array([self.distance_, self.angle_distance_])))
        
     def get_state(self):
