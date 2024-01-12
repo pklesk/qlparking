@@ -21,7 +21,7 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = True
+LEARNING_ON = False
 TEST_MODEL_NAME = None # string name e.g. "0368115377_q" (without file extension)
 TEST_RANDOM_SEED = 1 
 TEST_N_EPISODES = 1000
@@ -53,7 +53,7 @@ QL_ANIMATION_ON = True
 QL_ANIMATION_FREQUENCY = 250
 QL_STEERING_GAP_STEPS = 4
 QL_N_EPISODES = 1 * 10**4  
-QL_EPISODE_TIME_LIMIT = 25.0 # [s]
+QL_EPISODE_TIME_LIMIT = 1025.0 # [s]
 QL_COLLECT_EXPERIENCE_PROBABILITY = 1.0
 QL_GAMMA = 0.99
 QL_EPS_MAX = 0.5
@@ -204,18 +204,22 @@ def draw_scene(screen, scene, time_elapsed, Q_pred):
     # drawing car
     car = scene.car_    
     # car trace (history)
-    for i in range(1, len(car.x_history_)):
-        fls_new = SCALER_A * car.x_fl_history_[i] + SCALER_B
-        fls_old = SCALER_A * car.x_fl_history_[i - 1] + SCALER_B        
+    trace_seconds_back = 25.0
+    trace_back = min(int(np.round(trace_seconds_back * 1.0 / QL_DT)), len(car.x_history_))
+    for i in range(1, trace_back):
+        i_new = -i
+        i_old = -(i + 1)
+        fls_new = SCALER_A * car.x_fl_history_[i_new] + SCALER_B
+        fls_old = SCALER_A * car.x_fl_history_[i_old] + SCALER_B        
         lines_function(screen, COLOR_TRACE_FRONT, True, [tuple(fls_new), tuple(fls_old)], LINE_WIDTH_TRACE)
-        frs_new = SCALER_A * car.x_fr_history_[i] + SCALER_B
-        frs_old = SCALER_A * car.x_fr_history_[i - 1] + SCALER_B        
+        frs_new = SCALER_A * car.x_fr_history_[i_new] + SCALER_B
+        frs_old = SCALER_A * car.x_fr_history_[i_old] + SCALER_B        
         lines_function(screen, COLOR_TRACE_FRONT, True, [tuple(frs_new), tuple(frs_old)], LINE_WIDTH_TRACE)                
-        bls_new = SCALER_A * car.x_bl_history_[i] + SCALER_B
-        bls_old = SCALER_A * car.x_bl_history_[i - 1] + SCALER_B        
+        bls_new = SCALER_A * car.x_bl_history_[i_new] + SCALER_B
+        bls_old = SCALER_A * car.x_bl_history_[i_old] + SCALER_B        
         lines_function(screen, COLOR_TRACE_BACK, True, [tuple(bls_new), tuple(bls_old)], LINE_WIDTH_TRACE)
-        brs_new = SCALER_A * car.x_br_history_[i] + SCALER_B
-        brs_old = SCALER_A * car.x_br_history_[i - 1] + SCALER_B        
+        brs_new = SCALER_A * car.x_br_history_[i_new] + SCALER_B
+        brs_old = SCALER_A * car.x_br_history_[i_old] + SCALER_B        
         lines_function(screen, COLOR_TRACE_BACK, True, [tuple(brs_new), tuple(brs_old)], LINE_WIDTH_TRACE)
     # car corners coords
     fl = car.x_ + car.d_ahead_ * 0.5 * car.l_ - car.d_right_ * 0.5 * car.w_
@@ -302,18 +306,18 @@ def draw_scene(screen, scene, time_elapsed, Q_pred):
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 1 * TEXT_FONT_SIZE))
     text_img = font.render(f"d ahead: {car.d_ahead_} m, angle ahead: {float_format(car.angle_ahead_)}", True, COLOR_TEXT)    
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 2 * TEXT_FONT_SIZE))    
-    text_img = font.render(f"v: {car.v_} m/s, |v|: {float_format(car.v_magnitude_)} m/s = {float_format(car.v_magnitude_ * 3.6)} km/h", True, COLOR_TEXT)
+    text_img = font.render(f"v: {car.v_} m/s, _wrd_: {car.v_wrd_} m/s, |v|: {float_format(car.v_magnitude_)} m/s = {float_format(car.v_magnitude_ * 3.6)} km/h", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 3 * TEXT_FONT_SIZE))
     text_img = font.render(f"a: {car.a_} m/s^2, |a|: {float_format(car.a_magnitude_)} m/s^2", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 4 * TEXT_FONT_SIZE))
     # printing to park place info
-    text_img = font.render(f"to park place fl2: {car.to_park_place_fl2_} m", True, COLOR_TEXT)
+    text_img = font.render(f"to park place fl2: {car.to_park_place_fl2_} m, _wrd_: {car.to_park_place_fl2_wrd_} m", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 5 * TEXT_FONT_SIZE))
-    text_img = font.render(f"to park place fr2: {car.to_park_place_fr2_} m", True, COLOR_TEXT)
+    text_img = font.render(f"to park place fr2: {car.to_park_place_fr2_} m, _wrd_: {car.to_park_place_fr2_wrd_} m", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 6 * TEXT_FONT_SIZE))
-    text_img = font.render(f"to park place bl2: {car.to_park_place_bl2_} m", True, COLOR_TEXT)
+    text_img = font.render(f"to park place bl2: {car.to_park_place_bl2_} m, _wrd_: {car.to_park_place_bl2_wrd_} m", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 7 * TEXT_FONT_SIZE))
-    text_img = font.render(f"to park place br2: {car.to_park_place_br2_} m", True, COLOR_TEXT)
+    text_img = font.render(f"to park place br2: {car.to_park_place_br2_} m, _wrd_: {car.to_park_place_br2_wrd_} m ", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 8 * TEXT_FONT_SIZE))    
     text_img = font.render(f"distance: {float_format(car.distance_)} m", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 9 * TEXT_FONT_SIZE))
@@ -352,7 +356,7 @@ def scene_onesided():
     return scene
 
 def scene_twosided():
-    if np.random.rand() < 0.5:
+    if np.random.rand() < 0.5: 
         ppfl = np.array([-10.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
         ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
         park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))        
@@ -362,8 +366,8 @@ def scene_twosided():
         obstacles = []        
         scene = Scene(QL_DT, car, park_place, obstacles)
     else:
-        ppfl = np.array([10.0 + 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
-        ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
+        ppfl = np.array([10.0 + 0.5 * PARK_PLACE_LENGTH, +0.5 * PARK_PLACE_WIDTH])    
+        ppfr = ppfl + np.array([0.0, -PARK_PLACE_WIDTH])
         park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([-PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([-PARK_PLACE_LENGTH, 0.0]))
         random_shift = np.array([(2 * np.random.rand() - 1) * 5.0, (2 * np.random.rand() - 1) * 5.0])
         random_angle = (2 * np.random.rand() - 1) * 0.25 * np.pi

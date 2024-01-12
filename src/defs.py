@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_tppflfrblbr2_da"
+CAR_STATE_REPR_FUNCTION_NAME = "v_tppflfrblbr2_da_wrd" # "dv_tppflfrblbr2_da"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -127,7 +127,12 @@ class Car:
         self.x_fl_history_ = []
         self.x_fr_history_ = []
         self.x_bl_history_ = []         
-        self.x_br_history_ = []          
+        self.x_br_history_ = []
+        self.v_wrd_ = None # vector: car front to target park place front left        
+        self.to_park_place_fl2_wrd_ = None # vector: car front to target park place front left                          
+        self.to_park_place_fr2_wrd_ = None # vector: car front to target park place front right
+        self.to_park_place_bl2_wrd_ = None # vector: car back to target park place back left           
+        self.to_park_place_br2_wrd_ = None # vector: car back to target park place back right        
         
     def _refresh_corners(self):
         self.x_fl_ = self.x_ + self.d_ahead_ * 0.5 * self.l_ -  self.d_right_ * 0.5 * self.w_
@@ -179,7 +184,7 @@ class Car:
         self.to_park_place_b_norm_ = np.linalg.norm(self.to_park_place_b_)
         self.to_park_place_norm_ = np.linalg.norm(self.to_park_place_)
         ppfr = park_place.x_ + park_place.d_ahead_ * 0.5 * self.l_ + park_place.d_right_ * 0.5 * self.w_
-        ppfl = ppfr - park_place.d_right_ * self.w_          
+        ppfl = ppfr - park_place.d_right_ * self.w_
         ppbr = park_place.x_ - park_place.d_ahead_ * 0.5 * self.l_ + park_place.d_right_ * 0.5 * self.w_
         ppbl = ppbr - park_place.d_right_ * self.w_        
         self.to_park_place_fr_ = ppfr - self.x_fr_
@@ -200,7 +205,22 @@ class Car:
         self.gutter_distance_ = np.abs(park_place.d_right_0_ + park_place.d_right_.dot(self.x_))
         if self.v_magnitude_ == 0.0:
             if self.distance_ <= CONST_PARKED_MAX_RELATIVE_DISTANCE_DEVIATION * park_place.width_ and self.angle_distance_ <= CONST_PARKED_MAX_ANGLE_DEVIATION:
-                self.parked_ = True
+                self.parked_ = True        
+        angle = np.arctan2(self.v_[1], self.v_[0]) - self.angle_ahead_
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        self.v_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * np.linalg.norm(self.v_)
+        angle = np.arctan2(self.to_park_place_fr2_[1], self.to_park_place_fr2_[0]) - self.angle_ahead_
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])        
+        self.to_park_place_fr2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_fr2_norm_        
+        angle = np.arctan2(self.to_park_place_fl2_[1], self.to_park_place_fl2_[0]) - self.angle_ahead_
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])                
+        self.to_park_place_fl2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_fl2_norm_
+        angle = np.arctan2(self.to_park_place_br2_[1], self.to_park_place_br2_[0]) - self.angle_ahead_
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])                                                
+        self.to_park_place_br2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_br2_norm_
+        angle = np.arctan2(self.to_park_place_bl2_[1], self.to_park_place_bl2_[0]) - self.angle_ahead_
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        self.to_park_place_bl2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_bl2_norm_
                 
     def _check_collisions(self, obstacles):
         car_segments = [(self.x_fl_, self.x_fr_), (self.x_bl_, self.x_br_), (self.x_bl_, self.x_fl_), (self.x_br_, self.x_fr_)]
@@ -243,6 +263,9 @@ class Car:
 
     def _state_repr_dv_tppflfrblbr2_dag(self):
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl2_, self.to_park_place_fr2_, self.to_park_place_bl2_, self.to_park_place_br2_, np.array([self.distance_, self.angle_distance_, self.gutter_distance_])))
+
+    def _state_repr_v_tppflfrblbr2_da_wrd(self):        
+        return np.concatenate((np.array([self.v_[1]]), self.to_park_place_fl2_wrd_, self.to_park_place_fr2_wrd_, self.to_park_place_bl2_wrd_, self.to_park_place_br2_wrd_, np.array([self.distance_, self.angle_distance_])))
        
     def get_state(self):
         return self.state_repr_function()
