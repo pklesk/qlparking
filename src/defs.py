@@ -248,7 +248,7 @@ class Car:
             self.reward_ += -REWARD_PENALTY_COEF_GUTTER_DISTANCE * self.gutter_distance_                
 
     def _state_repr_avms_fb(self):
-        v_magnitude_signed = np.sign(self.d_.dot(self.v_)) * self.v_magnitude_
+        v_magnitude_signed = np.sign(self.d_ahead_.dot(self.v_)) * self.v_magnitude_
         return np.concatenate((np.array([self.angle_ahead_, v_magnitude_signed]), self.to_park_place_f_, self.to_park_place_b_))
 
     def _state_repr_dv_fb(self):
