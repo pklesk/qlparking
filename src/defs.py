@@ -205,22 +205,23 @@ class Car:
         self.gutter_distance_ = np.abs(park_place.d_right_0_ + park_place.d_right_.dot(self.x_))
         if self.v_magnitude_ == 0.0:
             if self.distance_ <= CONST_PARKED_MAX_RELATIVE_DISTANCE_DEVIATION * park_place.width_ and self.angle_distance_ <= CONST_PARKED_MAX_ANGLE_DEVIATION:
-                self.parked_ = True        
-        angle = np.arctan2(self.v_[1], self.v_[0]) - self.angle_ahead_
-        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
-        self.v_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * np.linalg.norm(self.v_)
-        angle = np.arctan2(self.to_park_place_fr2_[1], self.to_park_place_fr2_[0]) - self.angle_ahead_
-        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])        
-        self.to_park_place_fr2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_fr2_norm_        
-        angle = np.arctan2(self.to_park_place_fl2_[1], self.to_park_place_fl2_[0]) - self.angle_ahead_
-        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])                
-        self.to_park_place_fl2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_fl2_norm_
-        angle = np.arctan2(self.to_park_place_br2_[1], self.to_park_place_br2_[0]) - self.angle_ahead_
-        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])                                                
-        self.to_park_place_br2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_br2_norm_
-        angle = np.arctan2(self.to_park_place_bl2_[1], self.to_park_place_bl2_[0]) - self.angle_ahead_
-        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
-        self.to_park_place_bl2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_bl2_norm_
+                self.parked_ = True
+        if False: # currently pieces of information below inactive (not to slow down computations; for further research on agent-centered state representations)        
+            angle = np.arctan2(self.v_[1], self.v_[0]) - self.angle_ahead_
+            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+            self.v_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * np.linalg.norm(self.v_)
+            angle = np.arctan2(self.to_park_place_fr2_[1], self.to_park_place_fr2_[0]) - self.angle_ahead_
+            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])        
+            self.to_park_place_fr2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_fr2_norm_        
+            angle = np.arctan2(self.to_park_place_fl2_[1], self.to_park_place_fl2_[0]) - self.angle_ahead_
+            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])                
+            self.to_park_place_fl2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_fl2_norm_
+            angle = np.arctan2(self.to_park_place_br2_[1], self.to_park_place_br2_[0]) - self.angle_ahead_
+            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])                                                
+            self.to_park_place_br2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_br2_norm_
+            angle = np.arctan2(self.to_park_place_bl2_[1], self.to_park_place_bl2_[0]) - self.angle_ahead_
+            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+            self.to_park_place_bl2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_bl2_norm_
                 
     def _check_collisions(self, obstacles):
         car_segments = [(self.x_fl_, self.x_fr_), (self.x_bl_, self.x_br_), (self.x_bl_, self.x_fl_), (self.x_br_, self.x_fr_)]
