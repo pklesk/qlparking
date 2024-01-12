@@ -29,7 +29,6 @@ TEST_ANIMATION_ON = True
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
-FOLDER_LOGS = "../logs/"
 EXPERIENCE_BUFFER_MAX_SIZE = int(5 * 10**7)
 LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY = 0.995
 
@@ -52,7 +51,7 @@ QL_FPS = int(round(1.0 / QL_DT))
 QL_ANIMATION_ON = True
 QL_ANIMATION_FREQUENCY = 250
 QL_STEERING_GAP_STEPS = 4
-QL_N_EPISODES = 2 * 10**4  
+QL_N_EPISODES = 1 * 10**4  
 QL_EPISODE_TIME_LIMIT = 25.0 # [s]
 QL_COLLECT_EXPERIENCE_PROBABILITY = 1.0
 QL_GAMMA = 0.99
@@ -68,7 +67,7 @@ QL_ORACLE_SWITCH_GAP_EPISODES = 500
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "general_side20" 
+QL_SCENE_FUNCTION_NAME = "pp_east_side_10_angle_pi" 
 QL_TRANSFORMER = TRANSFORMERS["poly_1"] 
 QL_APPROXIMATOR = APPROXIMATORS["qmlp_large"]
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
@@ -344,7 +343,7 @@ def draw_scene(screen, scene, time_elapsed, Q_pred):
         text_rect = text_img.get_rect(center=(SCREEN_RESOLUTION[0] // 2, SCREEN_RESOLUTION[1] // 2))
         screen.blit(text_img, text_rect)    
 
-def scene_onesided():
+def scene_pp_east_side_10_angle_halfpi():
     ppfl = np.array([-10.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
     ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
     park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
@@ -355,28 +354,37 @@ def scene_onesided():
     scene = Scene(QL_DT, car, park_place, obstacles)
     return scene
 
-def scene_twosided():
+def scene_pp_east_side_10_angle_pi():
+    ppfl = np.array([-10.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
+    ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
+    park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
+    random_shift = np.array([(2 * np.random.rand() - 1) * 5.0, (2 * np.random.rand() - 1) * 5.0])
+    random_angle = (2 * np.random.rand() - 1) * 0.5 * np.pi
+    car = Car(x=np.array([10.0, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)    
+    obstacles = []        
+    scene = Scene(QL_DT, car, park_place, obstacles)
+    return scene
+
+def scene_pp_eastwest_side_10_angle_pi():
+    random_shift = np.array([(2 * np.random.rand() - 1) * 5.0, (2 * np.random.rand() - 1) * 5.0])
+    random_angle = (2 * np.random.rand() - 1) * 0.5 * np.pi    
     if np.random.rand() < 0.5: 
         ppfl = np.array([-10.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
         ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
         park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))        
-        random_shift = np.array([(2 * np.random.rand() - 1) * 5.0, (2 * np.random.rand() - 1) * 5.0])
-        random_angle = (2 * np.random.rand() - 1) * 0.25 * np.pi
         car = Car(x=np.array([10.0, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)    
-        obstacles = []        
-        scene = Scene(QL_DT, car, park_place, obstacles)
+        scene = Scene(QL_DT, car, park_place, obstacles=[])
     else:
         ppfl = np.array([10.0 + 0.5 * PARK_PLACE_LENGTH, +0.5 * PARK_PLACE_WIDTH])    
         ppfr = ppfl + np.array([0.0, -PARK_PLACE_WIDTH])
         park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([-PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([-PARK_PLACE_LENGTH, 0.0]))
         random_shift = np.array([(2 * np.random.rand() - 1) * 5.0, (2 * np.random.rand() - 1) * 5.0])
         random_angle = (2 * np.random.rand() - 1) * 0.25 * np.pi
-        car = Car(x=np.array([-10.0, 0.0]) + random_shift, angle=-(0.5 * np.pi + random_angle))    
-        obstacles = []        
-        scene = Scene(QL_DT, car, park_place, obstacles)        
+        car = Car(x=np.array([-10.0, 0.0]) + random_shift, angle=-(0.5 * np.pi + random_angle))
+        scene = Scene(QL_DT, car, park_place, obstacles=[])        
     return scene
 
-def scene_general_side20():    
+def scene_pp_middle_side_20_angle_twopi():    
     ppfl = np.array([0.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])
     ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
     park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
@@ -388,7 +396,7 @@ def scene_general_side20():
     scene = Scene(QL_DT, car, park_place, obstacles)
     return scene
 
-def scene_obstacles():
+def scene_obstacles_1():
     ppfl = np.array([-14.0, -6.0])    
     ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
     park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
