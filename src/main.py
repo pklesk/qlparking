@@ -67,7 +67,7 @@ QL_ORACLE_SWITCH_GAP_EPISODES = 500
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "pp_east_side_10_angle_pi" 
+QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_pi" 
 QL_TRANSFORMER = TRANSFORMERS["poly_1"] 
 QL_APPROXIMATOR = APPROXIMATORS["qmlp_large"]
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
@@ -343,7 +343,7 @@ def draw_scene(screen, scene, time_elapsed, Q_pred):
         text_rect = text_img.get_rect(center=(SCREEN_RESOLUTION[0] // 2, SCREEN_RESOLUTION[1] // 2))
         screen.blit(text_img, text_rect)    
 
-def scene_pp_east_side_10_angle_halfpi():
+def scene_pp_west_side_10_angle_halfpi():
     ppfl = np.array([-10.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
     ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
     park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
@@ -354,7 +354,7 @@ def scene_pp_east_side_10_angle_halfpi():
     scene = Scene(QL_DT, car, park_place, obstacles)
     return scene
 
-def scene_pp_east_side_10_angle_pi():
+def scene_pp_west_side_10_angle_pi():
     ppfl = np.array([-10.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
     ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
     park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
@@ -365,7 +365,7 @@ def scene_pp_east_side_10_angle_pi():
     scene = Scene(QL_DT, car, park_place, obstacles)
     return scene
 
-def scene_pp_eastwest_side_10_angle_pi():
+def scene_pp_westeast_side_10_angle_pi():
     random_shift = np.array([(2 * np.random.rand() - 1) * 5.0, (2 * np.random.rand() - 1) * 5.0])
     random_angle = (2 * np.random.rand() - 1) * 0.5 * np.pi    
     if np.random.rand() < 0.5: 
