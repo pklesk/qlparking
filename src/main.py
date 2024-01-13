@@ -21,8 +21,8 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = True
-TEST_MODEL_NAME = None # string name equal to hash code e.g. "0368115377"(without "_q.bin" suffix) 
+LEARNING_ON = False
+TEST_MODEL_NAME = "2354513149" # string name equal to hash code e.g. "0368115377"(without "_q.bin" suffix) 
 TEST_RANDOM_SEED = 1 
 TEST_N_EPISODES = 1000
 TEST_ANIMATION_ON = False
@@ -451,7 +451,15 @@ if __name__ == "__main__":
     rewards_ema = 0.0
     distances_ema = 0.0    
     r2_ema = 0.0    
-    extras = {"parked_count": [], "parked_frequency": [], "parked_frequency_ema": [], "rewards_ema": [], "distances_ema": [], "mse_batch_before": [], "mse_batch_after": [], "r2_batch_before": [], "r2_batch_after": []} 
+    extras = {"parked_count": [], 
+              "parked_frequency": [], 
+              "parked_frequency_ema": [], 
+              "rewards_ema": [], 
+              "distances_ema": [], 
+              "mse_batch_before": [], 
+              "mse_batch_after": [], 
+              "r2_batch_before": [], 
+              "r2_batch_after": []} 
     eb = np.empty((EXPERIENCE_BUFFER_MAX_SIZE, 6), dtype=object) # state, action, reward, next state, is next state terminal, Bellman error
     eb_size = 0
     eb_size_old = 0
@@ -469,13 +477,16 @@ if __name__ == "__main__":
     n = QL_TRANSFORMER.n_output_features_    
     print(f"FEATURES IN STATE REPRESENTATION: {n}")
     epi_disp_separator = "-" * 256
+    dt_since_action = QL_DT * QL_STEERING_GAP_STEPS
     
-    for epi in range(n_episodes):
-        scene = scene_function()
+    # LOOP OVER EPISODES
+    for epi in range(n_episodes):        
         t1_loop_body = time.time()
-        np.random.seed(epi_seeds[epi])
-        epi_title = f"CAR PARKING Q-LEARNING, EPISODE: {epi + 1}/{n_episodes}... " + (f"[epsilon: {eps}, seed: {epi_seeds[epi]}]" if LEARNING_ON else f"[seed: {epi_seeds[epi]}]")             
+        epi_seed = epi_seeds[epi]
+        np.random.seed(epi_seed)
+        epi_title = f"CAR PARKING Q-LEARNING, EPISODE: {epi + 1}/{n_episodes}... " + (f"[epsilon: {eps}, seed: {epi_seed}]" if LEARNING_ON else f"[seed: {epi_seed}]")             
         epi_animate = False
+        scene = scene_function()
         if animation_on and epi % animation_frequency == 0:
             pygame.init()
             icon = pygame.image.load("./../img/icon.png")    
@@ -496,15 +507,16 @@ if __name__ == "__main__":
         t2 = None
         time_elapsed = 0.0
         frame = 0
-        reward = None
         rewards_total = 0.0
+        rewards_count = 0        
         distances_total = 0.0
         epi_eb = np.empty((int(2 * QL_EPISODE_TIME_LIMIT / QL_DT), 6), dtype=object)        
         epi_eb_size = 0        
         collect_next_experience = False
+        collect_next_reward = False
         antistuck_nudge_ongoing = False
         antistuck_nudge_count = 0
-        while True: # main episode (and animation) loop
+        while True: # loop (simulation) for current episode
             time_elapsed = frame * QL_DT
             time_remaining = QL_EPISODE_TIME_LIMIT - time_elapsed                                        
             epi_stop_condition = car.parked_ or car.collided_ or time_elapsed >= QL_EPISODE_TIME_LIMIT                                                     
@@ -518,10 +530,13 @@ if __name__ == "__main__":
                     experience[0, 1] = action
                     experience[0, 2] = car.reward_
                     experience[0, 3] = next_state                    
-                    experience[0, 4] = car.parked_ #experience[0, 4] = True if car.parked_ or car.collided_ or car.time_exceeded_ else False
-                    experience[0, 5] = 0.0                        
+                    experience[0, 4] = car.parked_
+                    experience[0, 5] = 0.0 # Bellman error (for the case of prioritized experience replay, updateable after fits)                   
                     epi_eb[epi_eb_size] = experience
                     epi_eb_size += 1
+            if (steering_now and collect_next_reward) or epi_stop_condition:                        
+                rewards_total += car.reward_
+                rewards_count += 1
             if epi_stop_condition:
                 if epi_animate:
                     draw_scene(screen, scene, time_elapsed, None)
@@ -531,10 +546,13 @@ if __name__ == "__main__":
                 t2 = time.time()
                 if car.parked_:
                     parked_count += 1
+                    rewards_total += car.reward_
+                    rewards_count += 1                    
                 parked_frequency = parked_count / (epi + 1)
                 break
             if steering_now and not antistuck_nudge_ongoing:
                 state = car.get_state()
+                collect_next_reward = True
                 if LEARNING_ON:
                     collect_next_experience = np.random.rand() < QL_COLLECT_EXPERIENCE_PROBABILITY
                 if Q is None:
@@ -596,9 +614,7 @@ if __name__ == "__main__":
                     antistuck_nudge_steering_steps = QL_ANTISTUCK_NUDGE_STEERING_STEPS
                     antistuck_nudge_count += 1        
                     # print(f"[antistuck nudge: {antistuck_nudge_count}]")                                                                                                   
-            car.step(QL_DT, time_remaining, scene.obstacles_, scene.park_place_)                                                                      
-            reward = car.reward_    
-            rewards_total += reward
+            car.step(QL_DT, dt_since_action, time_remaining, scene.obstacles_, scene.park_place_)                                                                      
             distances_total += car.distance_                        
             frame += 1            
             t2 = time.time()            
@@ -612,7 +628,7 @@ if __name__ == "__main__":
         fps_observed = 0.0
         if t2 - t1 > 0.0:
             fps_observed = frame / (t2 - t1) 
-        print(f"CAR PARKING Q-LEARNING, EPISODE: {epi + 1}/{n_episodes} DONE. [outcome: {epi_outcome_str}, frames performed: {frame}, last reward: {car.reward_}, mean reward: {rewards_total / max_frames}, mean distance: {distances_total / max_frames}, time: {t2 - t1} s, fps: {fps_observed}]")
+        print(f"CAR PARKING Q-LEARNING, EPISODE: {epi + 1}/{n_episodes} DONE. [outcome: {epi_outcome_str}, frames performed: {frame}, last reward: {car.reward_}, mean reward: {rewards_total / rewards_count}, mean distance: {distances_total / max_frames}, time: {t2 - t1} s, fps: {fps_observed}]")
         # appending episode experience buffer to whole experience buffer
         diff = eb_size + epi_eb_size - EXPERIENCE_BUFFER_MAX_SIZE
         if diff <= 0:
@@ -622,7 +638,7 @@ if __name__ == "__main__":
         eb_size = min(eb_size + epi_eb_size, EXPERIENCE_BUFFER_MAX_SIZE)
         print(f"[experience size: {eb_size}]")
         # progress of some observations
-        rewards_ema = rewards_ema * LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY + rewards_total / max_frames * (1.0 - LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY)
+        rewards_ema = rewards_ema * LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY + rewards_total / rewards_count * (1.0 - LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY)
         distances_ema = distances_ema * LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY + distances_total / max_frames * (1.0 - LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY)
         parked_frequency_ema = parked_frequency_ema * LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY + car.parked_ * (1.0 - LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY)
         print(f"[parked frequency: {parked_frequency}]")

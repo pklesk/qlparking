@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "avms_fb"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s_da"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -36,6 +36,7 @@ REWARD_COLLIDED = -1e2
 REWARD_PENALTY_COEF_DISTANCE = 1.0 # can be interpreted as reciprocal of average velocity [m / s] while parking (to estimate time remaining to park)
 REWARD_PENALTY_COEF_ANGLE = 32.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
 REWARD_PENALTY_COEF_GUTTER_DISTANCE = 8.0 # can be interpreted as estimate of time [s] needed to correct one unit of "gutter distance"
+# best penalties discovered: (1.0, 32.0, 8.0)
 
 @jit(nopython=True)
 def solve_lines_intersection(x11, x12, x21, x22):
@@ -236,13 +237,13 @@ class Car:
                         self.collision_x_= ox1 + to * (ox2 - ox1)
                         return                
     
-    def _refresh_reward(self, dt, time_remaining=0.0):                                            
+    def _refresh_reward(self, dt_since_action, time_remaining=0.0):                                            
         if self.collided_:
-            self.reward_ = REWARD_COLLIDED * time_remaining / dt # 'reward' for collided state is assumed to last until end of episode
+            self.reward_ = REWARD_COLLIDED * time_remaining / dt_since_action # 'reward' for collided state is assumed to last until end of episode
         elif self.parked_:
-            self.reward_ = REWARD_PARKED * time_remaining / dt # reward for parked is assumed to last until end of episode
+            self.reward_ = REWARD_PARKED * time_remaining / dt_since_action # reward for parked is assumed to last until end of episode
         else:
-            self.reward_ = -dt            
+            self.reward_ = -dt_since_action            
             self.reward_ += -REWARD_PENALTY_COEF_DISTANCE * self.distance_
             self.reward_ += -REWARD_PENALTY_COEF_ANGLE * self.angle_distance_ / np.pi      
             self.reward_ += -REWARD_PENALTY_COEF_GUTTER_DISTANCE * self.gutter_distance_                
@@ -301,7 +302,7 @@ class Car:
                 self.a_ = np.sum(np.array(self.accelerations_imposed_), axis=0)
                 self.a_magnitude_ = np.linalg.norm(self.a_)
         
-    def step(self, dt, time_remaining, obstacles, park_place):                     
+    def step(self, dt, dt_since_action, time_remaining, obstacles, park_place):                     
         # static friction
         mu_static_g = self.mu_static_ * CONST_G
         if self.v_magnitude_ == 0.0 and self.a_magnitude_ > mu_static_g:
@@ -347,7 +348,7 @@ class Car:
         if time_remaining - dt <= 0.0:
             self.time_exceeded_ = True         
         self._refresh_to_park_place_vectors(park_place)      
-        self._refresh_reward(dt, time_remaining)
+        self._refresh_reward(dt_since_action, time_remaining)
         # memorize some history
         self.x_history_.append(np.copy(self.x_))
         self.x_fl_history_.append(np.copy(self.x_fl_))
