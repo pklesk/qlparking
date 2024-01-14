@@ -7,7 +7,6 @@ import time
 import itertools
 import pickle
 from copy import deepcopy
-from matplotlib import pyplot as plt
 from qapproximations import QRidgeRegressor, QMLPRegressor
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -21,11 +20,11 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = False
-TEST_MODEL_NAME = "2354513149" # string name equal to hash code e.g. "0368115377"(without "_q.bin" suffix) 
+LEARNING_ON = True
+TEST_MODEL_NAME = None # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
 TEST_RANDOM_SEED = 1 
 TEST_N_EPISODES = 1000
-TEST_ANIMATION_ON = False
+TEST_ANIMATION_ON = True
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
@@ -751,6 +750,7 @@ if __name__ == "__main__":
         print(f"[whole loop body time: {t2_loop_body - t1_loop_body} s]")
     if LEARNING_ON:    
         pickle_all(FOLDER_MODELS + f"{ehs}_q.bin", [Q])
-        pickle_all(FOLDER_EXTRAS + f"{ehs}_extras.bin", [extras])   
+        Q.json_dump(FOLDER_MODELS + f"{ehs}_q.json")
+        pickle_all(FOLDER_EXTRAS + f"{ehs}_extras.bin", [extras])           
     t2_main = time.time()
     print(f"CAR PARKING EXPERIMENT DONE. [time: {t2_main - t1_main} s]")
