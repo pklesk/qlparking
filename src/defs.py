@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_fb"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -34,7 +34,7 @@ PARK_PLACE_WIDTH = 2.74
 REWARD_PARKED = 0.0 
 REWARD_COLLIDED = -1e2
 REWARD_PENALTY_COEF_DISTANCE = 1.0 # can be interpreted as reciprocal of average velocity [m / s] while parking (to estimate time remaining to park)
-REWARD_PENALTY_COEF_ANGLE = 0.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
+REWARD_PENALTY_COEF_ANGLE = 1.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
 REWARD_PENALTY_COEF_GUTTER_DISTANCE = 0.0 # can be interpreted as estimate of time [s] needed to correct one unit of "gutter distance"
 # best penalties discovered: (1.0, 32.0, 8.0)
 
