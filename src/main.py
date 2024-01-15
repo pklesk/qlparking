@@ -20,11 +20,11 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = True
-TEST_MODEL_NAME = None # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
+LEARNING_ON = False
+TEST_MODEL_NAME = "2354513149" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
 TEST_RANDOM_SEED = 1 
 TEST_N_EPISODES = 1000
-TEST_ANIMATION_ON = False
+TEST_ANIMATION_ON = True
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
@@ -66,7 +66,7 @@ QL_ORACLE_SWITCH_GAP_EPISODES = 500
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi" 
+QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_pi" 
 QL_TRANSFORMER = TRANSFORMERS["poly_1"] 
 QL_APPROXIMATOR = APPROXIMATORS["qmlp_small"]
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
