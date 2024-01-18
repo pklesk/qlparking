@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_fb_da"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -34,8 +34,8 @@ PARK_PLACE_WIDTH = 2.74
 REWARD_PARKED = 0.0 
 REWARD_COLLIDED = -1e2
 REWARD_PENALTY_COEF_DISTANCE = 1.0 # can be interpreted as reciprocal of average velocity [m / s] while parking (to estimate time remaining to park)
-REWARD_PENALTY_COEF_ANGLE = 1.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
-REWARD_PENALTY_COEF_GUTTER_DISTANCE = 0.0 # can be interpreted as estimate of time [s] needed to correct one unit of "gutter distance"
+REWARD_PENALTY_COEF_ANGLE = 32.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
+REWARD_PENALTY_COEF_GUTTER_DISTANCE = 8.0 # can be interpreted as estimate of time [s] needed to correct one unit of "gutter distance"
 # best penalties discovered: (1.0, 32.0, 8.0)
 
 @jit(nopython=True)
@@ -129,6 +129,11 @@ class Car:
         self.x_fr_history_ = []
         self.x_bl_history_ = []         
         self.x_br_history_ = []
+        self.x_history_.append(np.copy(self.x_))
+        self.x_fl_history_.append(np.copy(self.x_fl_))
+        self.x_fr_history_.append(np.copy(self.x_fr_))
+        self.x_bl_history_.append(np.copy(self.x_bl_))        
+        self.x_br_history_.append(np.copy(self.x_br_))        
         self.v_wrd_ = None # vector: car front to target park place front left        
         self.to_park_place_fl2_wrd_ = None # vector: car front to target park place front left                          
         self.to_park_place_fr2_wrd_ = None # vector: car front to target park place front right
@@ -174,7 +179,7 @@ class Car:
                             value = np.linalg.norm(ox1 + to * (ox2 - ox1) - sx)
                             if value < sensor_values[si]:
                                 sensor_values[si] = value
-                                
+                                                                
     def _refresh_to_park_place_vectors(self, park_place):              
         ppf = park_place.x_ + park_place.d_ahead_ * 0.5 * self.l_
         ppb = park_place.x_ - park_place.d_ahead_ * 0.5 * self.l_                
@@ -254,6 +259,9 @@ class Car:
 
     def _state_repr_dv_fb(self):
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_f_, self.to_park_place_b_))
+
+    def _state_repr_dv_fb_da(self):
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_f_, self.to_park_place_b_, np.array([self.distance_, self.angle_distance_])))
 
     def _state_repr_dv_flfrblbr(self):
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl_, self.to_park_place_fr_, self.to_park_place_bl_, self.to_park_place_br_))

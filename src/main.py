@@ -21,8 +21,8 @@ PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
 LEARNING_ON = False
-TEST_MODEL_NAME = "0452267141" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
-TEST_RANDOM_SEED = 1 
+TEST_MODEL_NAME = "2904550350" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
+TEST_RANDOM_SEED = 1
 TEST_N_EPISODES = 1000
 TEST_ANIMATION_ON = False
 TEST_EPS = 0.0
@@ -73,8 +73,8 @@ QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
 
 # DRAWING CONSTANTS
 SCREEN_RESOLUTION = (720, 720)
-SCENE_X_RANGE = (-20.0, 20.0) # [m]
-SCENE_Y_RANGE = (-20.0, 20.0) # [m]
+SCENE_X_RANGE = (-17.5, 17.5) # [m]
+SCENE_Y_RANGE = (-17.5, 17.5) # [m]
 SCALER_X_A = ((SCREEN_RESOLUTION[0] - 1) - 0) / (SCENE_X_RANGE[1] - SCENE_X_RANGE[0])
 SCALER_X_B = 0 - SCALER_X_A * SCENE_X_RANGE[0]
 SCALER_Y_A = (0 - (SCREEN_RESOLUTION[1] - 1)) / (SCENE_Y_RANGE[1] - SCENE_Y_RANGE[0])
@@ -83,13 +83,13 @@ SCALER_A = np.array([SCALER_X_A, SCALER_Y_A])
 SCALER_B = np.array([SCALER_X_B, SCALER_Y_B])  
 COLOR_CAR = (176, 196, 222) 
 COLOR_CAR_BORDER = (0, 0, 160)
-COLOR_V_VECTOR = (0, 160, 0)
+COLOR_V_VECTOR = (0, 120, 0)
 COLOR_A_VECTOR = (160, 0, 0)
 COLOR_Q_VALUE = (64, 64, 255)
 COLOR_OBSTACLE = (0, 0, 0)
 COLOR_PARK_PLACE = (65, 105, 225)
-COLOR_SENSOR_BEAM = (96, 160, 96)
-COLOR_TO_PARK_PLACE_VECTOR = (208, 208, 208)
+COLOR_SENSOR_BEAM = (0, 206, 209)
+COLOR_TO_PARK_PLACE_VECTOR = (180, 180, 180)
 COLOR_TRACE_FRONT = (218, 165, 32)
 COLOR_TRACE_BACK = (154, 205, 50)
 COLOR_COLLISION = (255, 0, 0)
@@ -97,6 +97,7 @@ COLOR_PARKED = (0, 0, 255)
 COLOR_TIME_LIMIT_EXCEEDED = (255, 99, 71)
 COLOR_TEXT = (0, 0, 0)
 COLOR_TEXT_HIGHLIGHT = (255, 0, 0)
+COLOR_INITIAL_AREA_AND_ANGLE = (0, 0, 0)
 LINE_WIDTH_CAR = 2
 LINE_WIDTH_TRACE = 1
 LINE_WIDTH_V_VECTOR = 3
@@ -110,8 +111,8 @@ LINE_WIDTH_TO_PARK_PLACE_VECTOR = 1
 RADIUS_SENSOR = 2
 RADIUS_COLLISION = 10
 DRAWING_FACTOR_A = 2.0
-TEXT_FONT_NAME = "consolas"   
-TEXT_FONT_SIZE = 12
+TEXT_FONT_NAME = "lucidaconsole"   
+TEXT_FONT_SIZE = 10
 TEXT_MARGIN = 4
 TEXT_MESSAGE_FONT_SIZE = 36
 PLOT_FONTSIZE_SUPTITLE = 13
@@ -176,6 +177,20 @@ def unpickle_all(fname):
     print("UNPICKLE DONE. [time: " + str(t2 - t1) + " s]")
     return some_list
 
+
+def draw_dashed_line(surface, color, start_pos, end_pos, dash_length=4):
+    x1, y1 = start_pos
+    x2, y2 = end_pos
+    dx = x2 - x1
+    dy = y2 - y1
+    distance = max(abs(dx), abs(dy))
+    dx = dx / distance
+    dy = dy / distance
+    for i in range(int(distance/dash_length)):
+        if i % 2 == 0:
+            pygame.draw.line(surface, color, (x1 + dx * i * dash_length, y1 + dy * i * dash_length),
+                             (x1 + dx * (i + 1) * dash_length, y1 + dy * (i + 1) * dash_length), 1)
+
 def draw_scene(screen, scene, time_elapsed, Q_pred):
     screen.fill((255, 255, 255))
     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 0, SCREEN_RESOLUTION[0], SCREEN_RESOLUTION[1]),  1)            
@@ -219,6 +234,13 @@ def draw_scene(screen, scene, time_elapsed, Q_pred):
         brs_new = SCALER_A * car.x_br_history_[i_new] + SCALER_B
         brs_old = SCALER_A * car.x_br_history_[i_old] + SCALER_B        
         lines_function(screen, COLOR_TRACE_BACK, True, [tuple(brs_new), tuple(brs_old)], LINE_WIDTH_TRACE)
+    # drawing vectors to park place
+    if not car.collided_:
+        tpp_info = [(car.x_fl_, car.to_park_place_fl_), (car.x_fr_, car.to_park_place_fr_), (car.x_bl_, car.to_park_place_bl_), (car.x_br_, car.to_park_place_br_)]    
+        for tpp_corner, tpp_vector in tpp_info:
+            tpp_start = SCALER_A * tpp_corner + SCALER_B
+            tpp_end = SCALER_A * (tpp_corner + tpp_vector) + SCALER_B        
+            lines_function(screen, COLOR_TO_PARK_PLACE_VECTOR, False, [tuple(tpp_start), tuple(tpp_end)], LINE_WIDTH_TO_PARK_PLACE_VECTOR)                
     # car corners coords
     fl = car.x_ + car.d_ahead_ * 0.5 * car.l_ - car.d_right_ * 0.5 * car.w_
     fr = fl + car.d_right_ * car.w_ 
@@ -262,13 +284,19 @@ def draw_scene(screen, scene, time_elapsed, Q_pred):
                 beam_vector *= sensor_values[si] / np.linalg.norm(beam_vector)
                 beam_start = SCALER_A * sensor_xs[si] + SCALER_B
                 beam_end = SCALER_A * (sensor_xs[si] + beam_vector) + SCALER_B
-                lines_function(screen, COLOR_SENSOR_BEAM, False, [tuple(beam_start), tuple(beam_end)], LINE_WIDTH_SENSOR_BEAM)
-        # drawing vectors to park place
-        tpp_info = [(car.x_f_, car.to_park_place_fr2_), (car.x_f_, car.to_park_place_fl2_), (car.x_b_, car.to_park_place_br2_), (car.x_b_, car.to_park_place_bl2_)]    
-        for tpp_corner, tpp_vector in tpp_info:
-            tpp_start = SCALER_A * tpp_corner + SCALER_B
-            tpp_end = SCALER_A * (tpp_corner + tpp_vector) + SCALER_B        
-            lines_function(screen, COLOR_TO_PARK_PLACE_VECTOR, False, [tuple(tpp_start), tuple(tpp_end)], LINE_WIDTH_TO_PARK_PLACE_VECTOR)    
+                lines_function(screen, COLOR_SENSOR_BEAM, False, [tuple(beam_start), tuple(beam_end)], LINE_WIDTH_SENSOR_BEAM)        
+        if False:
+            # drawing area for initial random positions
+            tl = np.array([5.0, 5.0])
+            tr = tl + np.array([10.0, 0.0])
+            bl = tl + np.array([0.0, -10.0])
+            br = bl + np.array([10.0, 0.0])        
+            initial_area = [(tl, tr), (tr, br), (br, bl), (bl, tl)]    
+            for start, end in initial_area:
+                seg_start = SCALER_A * start + SCALER_B
+                seg_end = SCALER_A * end + SCALER_B        
+                draw_dashed_line(screen, COLOR_INITIAL_AREA_AND_ANGLE, tuple(seg_start), tuple(seg_end), 4)            
+        # drawing "parked" label                
         if car.parked_:
             font = pygame.font.SysFont(TEXT_FONT_NAME, TEXT_MESSAGE_FONT_SIZE) 
             text_img = font.render("PARKED!", True, COLOR_PARKED)
@@ -309,32 +337,36 @@ def draw_scene(screen, scene, time_elapsed, Q_pred):
     text_img = font.render(f"a: {car.a_} m/s^2, |a|: {float_format(car.a_magnitude_)} m/s^2", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 4 * TEXT_FONT_SIZE))
     # printing to park place info
-    text_img = font.render(f"to park place fl2: {car.to_park_place_fl2_} m", True, COLOR_TEXT)
+    text_img = font.render(f"to park place f: {car.to_park_place_f_} m", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 5 * TEXT_FONT_SIZE))
-    text_img = font.render(f"to park place fr2: {car.to_park_place_fr2_} m", True, COLOR_TEXT)
-    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 6 * TEXT_FONT_SIZE))
-    text_img = font.render(f"to park place bl2: {car.to_park_place_bl2_} m", True, COLOR_TEXT)
+    text_img = font.render(f"to park place b: {car.to_park_place_b_} m", True, COLOR_TEXT)
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 6 * TEXT_FONT_SIZE))    
+    text_img = font.render(f"to park place fl: {car.to_park_place_fl_} m, fl2: {car.to_park_place_fl2_}", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 7 * TEXT_FONT_SIZE))
-    text_img = font.render(f"to park place br2: {car.to_park_place_br2_} m", True, COLOR_TEXT)
-    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 8 * TEXT_FONT_SIZE))    
-    text_img = font.render(f"distance: {float_format(car.distance_)} m", True, COLOR_TEXT)
+    text_img = font.render(f"to park place fr: {car.to_park_place_fr_} m, fr2: {car.to_park_place_fr2_} m", True, COLOR_TEXT)
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 8 * TEXT_FONT_SIZE))
+    text_img = font.render(f"to park place bl: {car.to_park_place_bl_} m, bl2: {car.to_park_place_bl2_} m", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 9 * TEXT_FONT_SIZE))
+    text_img = font.render(f"to park place br: {car.to_park_place_br_} m, br2: {car.to_park_place_br2_} m", True, COLOR_TEXT)
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 10 * TEXT_FONT_SIZE))    
+    text_img = font.render(f"distance: {float_format(car.distance_)} m", True, COLOR_TEXT)
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 11 * TEXT_FONT_SIZE))
     text_img = font.render(f"angle distance: {float_format(car.angle_distance_)}", True, COLOR_TEXT)
-    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 10 * TEXT_FONT_SIZE))
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 12 * TEXT_FONT_SIZE))
     text_img = font.render(f"gutter distance: {float_format(car.gutter_distance_)} m", True, COLOR_TEXT)
-    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 11 * TEXT_FONT_SIZE))                            
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 13 * TEXT_FONT_SIZE))                            
     # printing car sensors' state
     text_img = font.render(f"sensors f: {car.sensors_front_values_} m", True, COLOR_TEXT)
-    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 12 * TEXT_FONT_SIZE))
-    text_img = font.render(f"sensors b: {car.sensors_back_values_} m", True, COLOR_TEXT)
-    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 13 * TEXT_FONT_SIZE))    
-    text_img = font.render(f"sensors l: {car.sensors_left_values_} m", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 14 * TEXT_FONT_SIZE))
-    text_img = font.render(f"sensors r: {car.sensors_right_values_} m", True, COLOR_TEXT)
+    text_img = font.render(f"sensors b: {car.sensors_back_values_} m", True, COLOR_TEXT)
     screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 15 * TEXT_FONT_SIZE))    
+    text_img = font.render(f"sensors l: {car.sensors_left_values_} m", True, COLOR_TEXT)
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 16 * TEXT_FONT_SIZE))
+    text_img = font.render(f"sensors r: {car.sensors_right_values_} m", True, COLOR_TEXT)
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 17 * TEXT_FONT_SIZE))    
     # printing reward    
     text_img = font.render(f"reward: {float_format(car.reward_)}", True, COLOR_TEXT)
-    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 16 * TEXT_FONT_SIZE))          
+    screen.blit(text_img, (TEXT_MARGIN, TEXT_MARGIN + 18 * TEXT_FONT_SIZE))          
     # episode time limit check
     if time_elapsed >= QL_EPISODE_TIME_LIMIT and not car.parked_:
         font = pygame.font.SysFont(TEXT_FONT_NAME, TEXT_MESSAGE_FONT_SIZE) 
