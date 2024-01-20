@@ -20,8 +20,8 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = False
-TEST_MODEL_NAME = "2904550350" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
+LEARNING_ON = True
+TEST_MODEL_NAME = None # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
 TEST_RANDOM_SEED = 1
 TEST_N_EPISODES = 1000
 TEST_ANIMATION_ON = False
@@ -456,7 +456,7 @@ if __name__ == "__main__":
     print("CAR PARKING EXPERIMENT...")
     ehs = experiment_hash_str() 
     print(f"EXPERIMENT HASH: {ehs}")
-    print(f"EXPERIMENT MODE: " + ("LEARNING" if LEARNING_ON else "TESTING"))
+    print(f"EXPERIMENT MODE: " + ("LEARNING" if LEARNING_ON else f"TESTING [test model name: {TEST_MODEL_NAME}]"))
     print(f"EXPERIMENT PARAMETERS:\n {dict_to_str(experiment_params())}")
     
     t1_main = time.time()    
