@@ -20,8 +20,8 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = True
-TEST_MODEL_NAME = None # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
+LEARNING_ON = False
+TEST_MODEL_NAME = "0506015742" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
 TEST_RANDOM_SEED = 1
 TEST_N_EPISODES = 1000
 TEST_ANIMATION_ON = False

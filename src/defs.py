@@ -34,8 +34,8 @@ PARK_PLACE_WIDTH = 2.74
 REWARD_PARKED = 0.0 
 REWARD_COLLIDED = -1e2
 REWARD_PENALTY_COEF_DISTANCE = 1.0 # can be interpreted as reciprocal of average velocity [m / s] while parking (to estimate time remaining to park)
-REWARD_PENALTY_COEF_ANGLE = 4.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
-REWARD_PENALTY_COEF_GUTTER_DISTANCE = 2.0 # can be interpreted as estimate of time [s] needed to correct one unit of "gutter distance"
+REWARD_PENALTY_COEF_ANGLE = 8.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
+REWARD_PENALTY_COEF_GUTTER_DISTANCE = 16.0 # can be interpreted as estimate of time [s] needed to correct one unit of "gutter distance"
 # best penalties discovered: (1.0, 32.0, 8.0)
 
 @jit(nopython=True)
@@ -134,7 +134,7 @@ class Car:
         self.x_fr_history_.append(np.copy(self.x_fr_))
         self.x_bl_history_.append(np.copy(self.x_bl_))        
         self.x_br_history_.append(np.copy(self.x_br_))        
-        self.v_wrd_ = None # vector: car front to target park place front left        
+        self.v_wrd_ = None # vector: car front to target park place front left ("wrd" means "with respect to car's direction vector", i.e. in relative coordinate system)        
         self.to_park_place_fl2_wrd_ = None # vector: car front to target park place front left                          
         self.to_park_place_fr2_wrd_ = None # vector: car front to target park place front right
         self.to_park_place_bl2_wrd_ = None # vector: car back to target park place back left           
