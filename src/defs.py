@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_fb"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr_d"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -34,8 +34,8 @@ PARK_PLACE_WIDTH = 2.74
 REWARD_PARKED = 0.0 
 REWARD_COLLIDED = -1e2
 REWARD_PENALTY_COEF_DISTANCE = 1.0 # can be interpreted as reciprocal of average velocity [m / s] while parking (to estimate time remaining to park)
-REWARD_PENALTY_COEF_ANGLE = 8.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
-REWARD_PENALTY_COEF_GUTTER_DISTANCE = 16.0 # can be interpreted as estimate of time [s] needed to correct one unit of "gutter distance"
+REWARD_PENALTY_COEF_ANGLE = 32.0 # can be interpreted as estimate of time [s] needed to correct the angle trajectory towards the parking (when wrong by 180 degrees)
+REWARD_PENALTY_COEF_GUTTER_DISTANCE = 8.0 # can be interpreted as estimate of time [s] needed to correct one unit of "gutter distance"
 # best penalties discovered: (1.0, 32.0, 8.0)
 
 @jit(nopython=True)
@@ -260,11 +260,26 @@ class Car:
     def _state_repr_dv_fb(self):
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_f_, self.to_park_place_b_))
 
+    def _state_repr_dv_fb_d(self):
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_f_, self.to_park_place_b_, np.array([self.distance_])))
+
     def _state_repr_dv_fb_da(self):
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_f_, self.to_park_place_b_, np.array([self.distance_, self.angle_distance_])))
 
+    def _state_repr_dv_fb_dag(self):
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_f_, self.to_park_place_b_, np.array([self.distance_, self.angle_distance_, self.gutter_distance_])))
+
     def _state_repr_dv_flfrblbr(self):
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl_, self.to_park_place_fr_, self.to_park_place_bl_, self.to_park_place_br_))
+
+    def _state_repr_dv_flfrblbr_d(self):
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl_, self.to_park_place_fr_, self.to_park_place_bl_, self.to_park_place_br_, np.array([self.distance_])))
+
+    def _state_repr_dv_flfrblbr_da(self):
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl_, self.to_park_place_fr_, self.to_park_place_bl_, self.to_park_place_br_, np.array([self.distance_, self.angle_distance_])))
+    
+    def _state_repr_dv_flfrblbr_dag(self):
+        return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl_, self.to_park_place_fr_, self.to_park_place_bl_, self.to_park_place_br_, np.array([self.distance_, self.angle_distance_, self.gutter_distance_])))
 
     def _state_repr_dv_flfrblbr2s(self):        
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl2_, self.to_park_place_fr2_, self.to_park_place_bl2_, self.to_park_place_br2_))
