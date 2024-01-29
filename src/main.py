@@ -20,11 +20,11 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = True
-TEST_MODEL_NAME = False # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
+LEARNING_ON = False
+TEST_MODEL_NAME = "0000000000" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
 TEST_RANDOM_SEED = 1
 TEST_N_EPISODES = 1000
-TEST_ANIMATION_ON = False
+TEST_ANIMATION_ON = True
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
@@ -66,7 +66,7 @@ QL_ORACLE_SWITCH_GAP_EPISODES = 500
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi" 
+QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi"  
 QL_TRANSFORMER = TRANSFORMERS["poly_1"] 
 QL_APPROXIMATOR = APPROXIMATORS["qmlp_small"]
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
@@ -235,8 +235,8 @@ def draw_scene(screen, scene, time_elapsed, Q_pred):
         brs_old = SCALER_A * car.x_br_history_[i_old] + SCALER_B        
         lines_function(screen, COLOR_TRACE_BACK, True, [tuple(brs_new), tuple(brs_old)], LINE_WIDTH_TRACE)
     # drawing vectors to park place
-    if not car.collided_:
-        tpp_info = [(car.x_fl_, car.to_park_place_fl_), (car.x_fr_, car.to_park_place_fr_), (car.x_bl_, car.to_park_place_bl_), (car.x_br_, car.to_park_place_br_)]    
+    if not car.collided_:        
+        tpp_info = [(car.x_fl_, car.to_park_place_fl_), (car.x_fr_, car.to_park_place_fr_), (car.x_bl_, car.to_park_place_bl_), (car.x_br_, car.to_park_place_br_)]
         for tpp_corner, tpp_vector in tpp_info:
             tpp_start = SCALER_A * tpp_corner + SCALER_B
             tpp_end = SCALER_A * (tpp_corner + tpp_vector) + SCALER_B        
@@ -383,7 +383,7 @@ def scene_pp_west_side_10_angle_halfpi():
     car = Car(x=np.array([10.0, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)    
     obstacles = []        
     scene = Scene(QL_DT, car, park_place, obstacles)
-    return scene
+    return scene    
 
 def scene_pp_west_side_10_angle_pi():
     ppfl = np.array([-10.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
