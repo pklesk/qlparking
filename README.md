@@ -8,7 +8,7 @@
    </tr>   
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/2d4d138d-b232-4d42-b405-7f31edcbd9d3">[short_demo 1]</a></td>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/2d4d138d-b232-4d42-b405-7f31edcbd9d3">[short_demo 2</a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/2d4d138d-b232-4d42-b405-7f31edcbd9d3">[short_demo 2]</a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/2d4d138d-b232-4d42-b405-7f31edcbd9d3">[short_demo 3]</a></td>
     </tr>
 </table>
