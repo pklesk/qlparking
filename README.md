@@ -1,7 +1,14 @@
-# Double Q-Learning for a Simple Parking Problem: Propositions of Reward Functions and State Representations
+# Double Q-Learning for a Simple Parking Problem
+#### Sample videos
 <table>
    <tr>
-        <td><a href="https://github.com/pklesk/qlparking/assets/23095311/9082f607-dcef-4c09-9a22-bc95f8c59189">[short_demo]</a></td>
+      <td align="center">learning stage (after 3000 episodes)/td>
+      <td align="center">testing stage 1 (initial angle range 90°)</td>
+      <td align="center">testing stage 2 (initial angle range 180°, extrapolation)</td>
+   </tr>   
+   <tr>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/9082f6071-dcef-4c09-9a22-bc95f8c59189">[short_demo 1]</a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/9082f6071-dcef-4c09-9a22-bc95f8c59189">[short_demo 1]</a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/9082f6071-dcef-4c09-9a22-bc95f8c59189">[short_demo 1]</a></td>
     </tr>
 </table>
-
