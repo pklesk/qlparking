@@ -22,9 +22,9 @@
       <td>[short_demo C]</td>
     </tr>    
    <tr>
-      <td align="center">testing stage 2 (initial angle range 180°)<br/>A</td>
-      <td align="center">testing stage 2 (initial angle range 180°)<br/>B</td>
-      <td align="center">testing stage 2 (initial angle range 180°)<br/>C</td>
+      <td align="center">testing stage 2: demo A<br/>(initial angle range 180°)</td>
+      <td align="center">testing stage 2: demo B<br/>(initial angle range 180°)</td>
+      <td align="center">testing stage 2: demo C<br/>(initial angle range 180°)</td>
    </tr>   
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1d886842-adc5-4273-ad3e-95f6dbce12ef"><img src="https://github.com/pklesk/qlparking/assets/23095311/c7f65243-d077-46a9-803c-f18ace843bc5"/></a></td>
@@ -32,9 +32,9 @@
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1a8d0810-46b4-4134-915e-f01dcafd30e6"><img src="https://github.com/pklesk/qlparking/assets/23095311/08fbdfbe-2820-431d-8c1e-639ed2f5b1c0"/></a></td>
     </tr>
    <tr>
-      <td align="center">testing stage 2 (initial angle range 180°)<br/>D</td>
-      <td align="center">testing stage 2 (initial angle range 180°)<br/>E</td>
-      <td align="center">testing stage 2 (initial angle range 180°)<br/>F</td>
+      <td align="center">testing stage 2: demo D<br/>(initial angle range 180°)</td>
+      <td align="center">testing stage 2: demo E<br/>(initial angle range 180°)</td>
+      <td align="center">testing stage 2: demo F<br/>(initial angle range 180°)</td>
    </tr>   
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/6dfd0204-acb2-4420-97ee-e079b664d2c1"><img src="https://github.com/pklesk/qlparking/assets/23095311/4c01d35b-ef49-4375-b2b6-941c5de988f2"/></a></td>
