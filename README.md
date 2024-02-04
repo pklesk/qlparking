@@ -18,8 +18,8 @@
    </tr>   
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1d886842-adc5-4273-ad3e-95f6dbce12ef">[short_demo A]</a></td>
-      <td>[short_demo b]</td>
-      <td>[short_demo c]</td>
+      <td>[short_demo B]</td>
+      <td>[short_demo C]</td>
     </tr>    
    <tr>
       <td align="center">testing stage 2 (initial angle range 180°)<br/>A</td>
