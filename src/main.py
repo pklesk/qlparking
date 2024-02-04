@@ -9,6 +9,7 @@ import pickle
 from copy import deepcopy
 from qapproximations import QRidgeRegressor, QMLPRegressor
 from sklearn.preprocessing import PolynomialFeatures
+import ctypes
 
 # ACTIONS-, PARK PLACE-RELATED CONSTANTS
 ACCELERATION_MAGNITUDES_AHEAD = defs.CAR_ACCELERATION_MAGNITUDES_AHEAD
@@ -21,15 +22,19 @@ PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
 LEARNING_ON = False
-TEST_MODEL_NAME = "0000000000" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix) 
+TEST_MODEL_NAME = "2354513149" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
+TEST_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_pi" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
 TEST_RANDOM_SEED = 1
-TEST_N_EPISODES = 1000
+TEST_EPI_SEEDS = [1916133090, 1754904329, 513207677] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
+TEST_N_EPISODES = 100
 TEST_ANIMATION_ON = True
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
 EXPERIENCE_BUFFER_MAX_SIZE = int(5 * 10**7)
 LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY = 0.995
+DEMO_TITLE_LINE_1 = "TESTING STAGE 2"
+DEMO_TITLE_LINE_2 = "(180° RANGE FOR INITIAL RANDOM ANGLES)"
 
 # DICTIONARIES OF PREDEFINED: TRANSFORMERS, APPROXIMATORS
 TRANSFORMERS = {
@@ -73,6 +78,7 @@ QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
 
 # DRAWING CONSTANTS
 SCREEN_RESOLUTION = (720, 720)
+SCREEN_RESOLUTION_DPI_AWARE = False
 SCENE_X_RANGE = (-17.5, 17.5) # [m]
 SCENE_Y_RANGE = (-17.5, 17.5) # [m]
 SCALER_X_A = ((SCREEN_RESOLUTION[0] - 1) - 0) / (SCENE_X_RANGE[1] - SCENE_X_RANGE[0])
@@ -97,6 +103,7 @@ COLOR_PARKED = (0, 0, 255)
 COLOR_TIME_LIMIT_EXCEEDED = (255, 99, 71)
 COLOR_TEXT = (0, 0, 0)
 COLOR_TEXT_HIGHLIGHT = (255, 0, 0)
+COLOR_TEXT_INTRO = (255, 255, 255)
 COLOR_INITIAL_AREA_AND_ANGLE = (0, 0, 0)
 LINE_WIDTH_CAR = 2
 LINE_WIDTH_TRACE = 1
@@ -115,6 +122,9 @@ TEXT_FONT_NAME = "lucidaconsole"
 TEXT_FONT_SIZE = 10
 TEXT_MARGIN = 4
 TEXT_MESSAGE_FONT_SIZE = 36
+TEXT_INTRO_FONT_NAME = "bahnschrift"
+TEXT_INTRO_FONT_SIZE = 10
+TEXT_INTRO_MESSAGE_FONT_SIZE = 36
 PLOT_FONTSIZE_SUPTITLE = 13
 PLOT_FONTSIZE_TITLE = 9.5
 PLOT_FONTSIZE_AXES = 12.5
@@ -190,6 +200,49 @@ def draw_dashed_line(surface, color, start_pos, end_pos, dash_length=4):
         if i % 2 == 0:
             pygame.draw.line(surface, color, (x1 + dx * i * dash_length, y1 + dy * i * dash_length),
                              (x1 + dx * (i + 1) * dash_length, y1 + dy * (i + 1) * dash_length), 1)
+
+def draw_intro(screen, ehs, title_line_1, title_line_2=None):
+    screen.fill((0, 0, 0))    
+    font = pygame.font.SysFont(TEXT_INTRO_FONT_NAME, TEXT_INTRO_MESSAGE_FONT_SIZE) 
+    
+    title_current_y = SCREEN_RESOLUTION[1] // 2 - 1 * TEXT_INTRO_MESSAGE_FONT_SIZE
+    text_img = font.render(title_line_1, True, COLOR_TEXT_INTRO)
+    text_rect = text_img.get_rect(center=(SCREEN_RESOLUTION[0] // 2, title_current_y))
+    screen.blit(text_img, text_rect)
+    title_current_y += TEXT_INTRO_MESSAGE_FONT_SIZE
+    if title_line_2 is not None:
+        text_img = font.render(title_line_2, True, COLOR_TEXT_INTRO)
+        text_rect = text_img.get_rect(center=(SCREEN_RESOLUTION[0] // 2, title_current_y))
+        screen.blit(text_img, text_rect)
+        title_current_y += TEXT_INTRO_MESSAGE_FONT_SIZE
+    font = pygame.font.SysFont(TEXT_INTRO_FONT_NAME, TEXT_INTRO_FONT_SIZE)         
+    y_offset = int(0.875 * SCREEN_RESOLUTION[1])
+    text_img = font.render(f"experiment hash code: {ehs}", True, COLOR_TEXT_INTRO)
+    screen.blit(text_img, (TEXT_MARGIN, y_offset))
+    y_offset += TEXT_FONT_SIZE
+    test_model_name = TEST_MODEL_NAME if TEST_MODEL_NAME is not None else "-"
+    text_img = font.render(f"test model name: {test_model_name}", True, COLOR_TEXT_INTRO)
+    screen.blit(text_img, (TEXT_MARGIN, y_offset))
+    y_offset += TEXT_FONT_SIZE
+    text_img = font.render(f"reward parameters: ({defs.REWARD_PENALTY_COEF_DISTANCE}, {defs.REWARD_PENALTY_COEF_ANGLE}, {defs.REWARD_PENALTY_COEF_GUTTER_DISTANCE})", True, COLOR_TEXT_INTRO)
+    screen.blit(text_img, (TEXT_MARGIN, y_offset))
+    y_offset += TEXT_FONT_SIZE
+    text_img = font.render(f"state representation: {defs.CAR_STATE_REPR_FUNCTION_NAME}", True, COLOR_TEXT_INTRO)
+    screen.blit(text_img, (TEXT_MARGIN, y_offset))
+    y_offset += TEXT_FONT_SIZE    
+    text_img = font.render(f"Q models: {QL_APPROXIMATOR}", True, COLOR_TEXT_INTRO)
+    screen.blit(text_img, (TEXT_MARGIN, y_offset))
+    y_offset += TEXT_FONT_SIZE
+    text_img = font.render(f"scene for learning: {QL_SCENE_FUNCTION_NAME} [seed: {QL_RANDOM_SEED}]", True, COLOR_TEXT_INTRO)
+    screen.blit(text_img, (TEXT_MARGIN, y_offset))
+    y_offset += TEXT_FONT_SIZE
+    text_img = font.render(f"scene for testing: {TEST_SCENE_FUNCTION_NAME} [seed: {TEST_RANDOM_SEED}]", True, COLOR_TEXT_INTRO)
+    screen.blit(text_img, (TEXT_MARGIN, y_offset))
+    y_offset += TEXT_FONT_SIZE
+    if TEST_EPI_SEEDS:
+        text_img = font.render(f"seeds of particular episodes in this demo: {TEST_EPI_SEEDS}", True, COLOR_TEXT_INTRO)
+        screen.blit(text_img, (TEXT_MARGIN, y_offset))
+        y_offset += TEXT_FONT_SIZE             
 
 def draw_scene(screen, scene, time_elapsed, Q_pred):
     screen.fill((255, 255, 255))
@@ -459,6 +512,9 @@ if __name__ == "__main__":
     print(f"EXPERIMENT MODE: " + ("LEARNING" if LEARNING_ON else f"TESTING [test model name: {TEST_MODEL_NAME}]"))
     print(f"EXPERIMENT PARAMETERS:\n {dict_to_str(experiment_params())}")
     
+    if SCREEN_RESOLUTION_DPI_AWARE:
+        ctypes.windll.user32.SetProcessDPIAware()
+    
     t1_main = time.time()    
     if LEARNING_ON:
         np.random.seed(QL_RANDOM_SEED)
@@ -472,7 +528,13 @@ if __name__ == "__main__":
         animation_frequency = 1         
     seed_dtype = np.int32    
     epi_seeds = np.random.randint(low=0, high=np.iinfo(seed_dtype).max, dtype=seed_dtype, size=n_episodes)
-    scene_function = globals()["scene_" + QL_SCENE_FUNCTION_NAME]    
+    if not LEARNING_ON and TEST_EPI_SEEDS:
+        epi_seeds = np.array(TEST_EPI_SEEDS)
+        n_episodes = epi_seeds.size    
+    scene_function_name = QL_SCENE_FUNCTION_NAME 
+    if not LEARNING_ON and TEST_SCENE_FUNCTION_NAME is not None: 
+        scene_function_name = TEST_SCENE_FUNCTION_NAME
+    scene_function = globals()["scene_" + scene_function_name]            
     first_fit_done = False
     Q = None 
     Q_oracle = None    
@@ -509,6 +571,16 @@ if __name__ == "__main__":
     print(f"FEATURES IN STATE REPRESENTATION: {n}")
     epi_disp_separator = "-" * 256
     dt_since_action = QL_DT * QL_STEERING_GAP_STEPS
+
+    # INTRO
+    pygame.init()
+    icon = pygame.image.load("./../img/icon.png")
+    pygame.display.set_icon(icon)
+    pygame.display.set_caption("CAR PARKING Q-LEARNING DEMO")
+    screen = pygame.display.set_mode(SCREEN_RESOLUTION)    
+    draw_intro(screen, ehs, DEMO_TITLE_LINE_1, DEMO_TITLE_LINE_2)
+    pygame.display.flip()
+    input("[press enter to start]")
     
     # LOOP OVER EPISODES
     for epi in range(n_episodes):        
@@ -572,7 +644,7 @@ if __name__ == "__main__":
                 if epi_animate:
                     draw_scene(screen, scene, time_elapsed, None)
                     pygame.display.flip()                     
-                    time.sleep(2.0)
+                    time.sleep(1.0)
                     pygame.quit()
                 t2 = time.time()
                 if car.parked_:
