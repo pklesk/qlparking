@@ -14,7 +14,7 @@
    <tr>
       <td align="center">testing stage 1 (initial angle range 90°)<br/>A</td>
       <td align="center">testing stage 1 (initial angle range 90°)<br/>B</td>
-      <td align="center">testing stage 1 (initial angle range 90°)<br/>C/td>
+      <td align="center">testing stage 1 (initial angle range 90°)<br/>C</td>
    </tr>   
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1d886842-adc5-4273-ad3e-95f6dbce12ef">[short_demo A]</a></td>
