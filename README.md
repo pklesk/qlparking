@@ -8,8 +8,8 @@
       <td align="center">demo 3: after 3000 episodes</td>      
    </tr>   
    <tr>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/fdd1ee09-d866-4a6a-948f-3f18b7b3b2e1">[short_demo A]</a></td>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/fdd1ee09-d866-4a6a-948f-3f18b7b3b2e1">[short_demo A]</a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/9487db7b-a427-47a2-afd7-62947f58ace8">[short_demo A]</a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/36250855-63cd-4f26-911e-b972efc6fe40">[short_demo A]</a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/fdd1ee09-d866-4a6a-948f-3f18b7b3b2e1">[short_demo A]</a></td>
     </tr>
 </table>
