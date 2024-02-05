@@ -4,7 +4,7 @@
 <table>
    <tr>
       <td align="center">demo 1: after 1000 episodes</td>
-      <td align="center">demo 2: after 2000 episodes/td>
+      <td align="center">demo 2: after 2000 episodes</td>
       <td align="center">demo 3: after 3000 episodes</td>      
    </tr>   
    <tr>
