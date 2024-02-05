@@ -15,7 +15,7 @@
     </tr>
 </table>
 
-### Testing stage 1 (90° range for initial random angles) - standard generalization (after 10k episodes)
+### Testing stage 1 (90° range for initial random angles) - generalization after 10k episodes
 <table>
    <tr>
       <td align="center">demo 4:</td>
@@ -29,7 +29,7 @@
     </tr>    
 </table>
 
-### Testing stage 2 (180° range for initial random angles) - extrapolative generalization (after 10k episodes)
+### Testing stage 2 (180° range for initial random angles) - extrapolative generalization after 10k episodes
 <table>
    <tr>
       <td align="center">demo 7:</td>
