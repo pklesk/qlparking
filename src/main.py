@@ -23,9 +23,9 @@ PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 # MAIN SETTINGS: LEARNING OR TESTING
 LEARNING_ON = False
 TEST_MODEL_NAME = "2354513149" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
-TEST_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_pi" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
+TEST_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
 TEST_RANDOM_SEED = 1
-TEST_EPI_SEEDS = [1916133090, 1754904329, 513207677] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
+TEST_EPI_SEEDS = [] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
 TEST_N_EPISODES = 100
 TEST_ANIMATION_ON = True
 TEST_EPS = 0.0
@@ -33,8 +33,8 @@ FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
 EXPERIENCE_BUFFER_MAX_SIZE = int(5 * 10**7)
 LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY = 0.995
-DEMO_TITLE_LINE_1 = "TESTING STAGE 2"
-DEMO_TITLE_LINE_2 = "(180° RANGE FOR INITIAL RANDOM ANGLES)"
+DEMO_TITLE_LINE_1 = "TESTING STAGE 1"
+DEMO_TITLE_LINE_2 = "(90° RANGE FOR INITIAL RANDOM ANGLES)"
 
 # DICTIONARIES OF PREDEFINED: TRANSFORMERS, APPROXIMATORS
 TRANSFORMERS = {
@@ -239,7 +239,7 @@ def draw_intro(screen, ehs, title_line_1, title_line_2=None):
     text_img = font.render(f"scene for testing: {TEST_SCENE_FUNCTION_NAME} [seed: {TEST_RANDOM_SEED}]", True, COLOR_TEXT_INTRO)
     screen.blit(text_img, (TEXT_MARGIN, y_offset))
     y_offset += TEXT_FONT_SIZE
-    if TEST_EPI_SEEDS:
+    if TEST_EPI_SEEDS is not None and len(TEST_EPI_SEEDS) > 0:
         text_img = font.render(f"seeds of particular episodes in this demo: {TEST_EPI_SEEDS}", True, COLOR_TEXT_INTRO)
         screen.blit(text_img, (TEXT_MARGIN, y_offset))
         y_offset += TEXT_FONT_SIZE             
