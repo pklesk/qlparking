@@ -4,9 +4,9 @@
 ### Learning stage (90° range for initial random angles)
 <table>
    <tr>
-      <td align="center">demo 1: after 1000 episodes</td>
-      <td align="center">demo 2: after 2000 episodes</td>
-      <td align="center">demo 3: after 3000 episodes</td>      
+      <td align="center">demo 1: after 1k episodes</td>
+      <td align="center">demo 2: after 2k episodes</td>
+      <td align="center">demo 3: after 3k episodes</td>      
    </tr>   
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/9487db7b-a427-47a2-afd7-62947f58ace8"><img src="https://github.com/pklesk/qlparking/assets/23095311/775a491d-ad7b-4e34-a140-4e9d678ef5d1"/></a></td>
@@ -15,7 +15,7 @@
     </tr>
 </table>
 
-### Testing stage 1 (90° range for initial random angles) - standard generalization
+### Testing stage 1 (90° range for initial random angles) - standard generalization (after 10k episodes)
 <table>
    <tr>
       <td align="center">demo 4:</td>
@@ -23,13 +23,13 @@
       <td align="center">demo 6:</td>
    </tr>   
    <tr>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1d886842-adc5-4273-ad3e-95f6dbce12ef">[short_demo A]</a></td>
-      <td>[short_demo B]</td>
-      <td>[short_demo C]</td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1d886842-adc5-4273-ad3e-95f6dbce12ef"><img src="https://github.com/pklesk/qlparking/assets/23095311/92d23a80-eb75-473c-a9ec-acf28746bc17"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/bc1adb70-df15-474c-a75c-a479a6c408fd"><img src="https://github.com/pklesk/qlparking/assets/23095311/58636ed2-6e13-4282-874b-64afff9de649"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/dad27043-045c-42b6-ba22-ab7041be2088"><img src="https://github.com/pklesk/qlparking/assets/23095311/e351ea7e-71c9-446e-8602-743a95b6bce3"/></td>
     </tr>    
 </table>
 
-### Testing stage 2 (180° range for initial random angles) - extrapolative generalization 
+### Testing stage 2 (180° range for initial random angles) - extrapolative generalization (after 10k episodes)
 <table>
    <tr>
       <td align="center">demo 7:</td>
