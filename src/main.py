@@ -21,8 +21,8 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = False
-TEST_MODEL_NAME = "2354513149" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
+LEARNING_ON = True
+TEST_MODEL_NAME = None # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
 TEST_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
 TEST_RANDOM_SEED = 1
 TEST_EPI_SEEDS = [] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
@@ -33,8 +33,8 @@ FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
 EXPERIENCE_BUFFER_MAX_SIZE = int(5 * 10**7)
 LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY = 0.995
-DEMO_TITLE_LINE_1 = "TESTING STAGE 1"
-DEMO_TITLE_LINE_2 = "(90° RANGE FOR INITIAL RANDOM ANGLES)"
+DEMO_TITLE_LINE_1 = None 
+DEMO_TITLE_LINE_2 = None
 
 # DICTIONARIES OF PREDEFINED: TRANSFORMERS, APPROXIMATORS
 TRANSFORMERS = {
@@ -73,7 +73,7 @@ QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
 QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi"  
 QL_TRANSFORMER = TRANSFORMERS["poly_1"] 
-QL_APPROXIMATOR = APPROXIMATORS["qmlp_small"]
+QL_APPROXIMATOR = APPROXIMATORS["qridge_1e2_090"]
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
 
 # DRAWING CONSTANTS
@@ -577,8 +577,9 @@ if __name__ == "__main__":
     icon = pygame.image.load("./../img/icon.png")
     pygame.display.set_icon(icon)
     pygame.display.set_caption("CAR PARKING Q-LEARNING DEMO")
-    screen = pygame.display.set_mode(SCREEN_RESOLUTION)    
-    draw_intro(screen, ehs, DEMO_TITLE_LINE_1, DEMO_TITLE_LINE_2)
+    screen = pygame.display.set_mode(SCREEN_RESOLUTION)
+    if DEMO_TITLE_LINE_1 is not None:    
+        draw_intro(screen, ehs, DEMO_TITLE_LINE_1, DEMO_TITLE_LINE_2)
     pygame.display.flip()
     input("[press enter to start]")
     
