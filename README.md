@@ -1,7 +1,10 @@
 # Double Q-Learning for a Simple Parking Problem
 
-## Sample videos <br/>(scenes: `"pp_west_side_10_angle_halfpi"`, `"pp_west_side_10_angle_pi"`)
-### Learning stage (90° range for initial random angles)
+## Sample videos
+
+### Model: `2354513149` (scenes: `"pp_west_side_10_angle_halfpi"`, `"pp_west_side_10_angle_pi"`)
+
+#### Learning stage (90° range for initial random angles)
 <table>
    <tr>
       <td align="center">demo 1: after 1k episodes</td>
@@ -15,7 +18,7 @@
     </tr>
 </table>
 
-### Testing stage 1 (90° range for initial random angles) - generalization after 10k episodes
+#### Testing stage 1 (90° range for initial random angles) - generalization after 10k episodes
 <table>
    <tr>
       <td align="center">demo 4:</td>
@@ -29,7 +32,7 @@
     </tr>    
 </table>
 
-### Testing stage 2 (180° range for initial random angles) - extrapolative generalization after 10k episodes
+#### Testing stage 2 (180° range for initial random angles) - extrapolative generalization after 10k episodes
 <table>
    <tr>
       <td align="center">demo 7:</td>
