@@ -1,6 +1,6 @@
 # Double Q-Learning for a Simple Parking Problem
 
-## Sample videos
+## Sample videos <br/>(for scenes: `"pp_west_side_10_angle_halfpi"`, `"pp_west_side_10_angle_pi"`)
 ### Learning stage (90° range for initial random angles)
 <table>
    <tr>
