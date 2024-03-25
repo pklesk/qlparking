@@ -55,3 +55,38 @@
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/fcb896a3-131c-4d32-b14e-ef5f66fdbf0f"><img src="https://github.com/pklesk/qlparking/assets/23095311/f2dfb92b-ade9-41bb-a252-be71e3202697"></a></td>
     </tr>   
 </table>
+
+### Model: `4123751078` (scene: `"pp_middle_side_20_angle_twopi"`, 360° range for initial random angles)
+
+#### Testing stage - generalization after 10k episodes
+
+<table>
+   <tr>
+      <td align="center">demo 13:</td>
+      <td align="center">demo 14:</td>
+      <td align="center">demo 15:</td>
+   </tr>   
+   <tr>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1d886842-adc5-4273-ad3e-95f6dbce12ef"><img src="https://github.com/pklesk/qlparking/assets/23095311/92d23a80-eb75-473c-a9ec-acf28746bc17"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/bc1adb70-df15-474c-a75c-a479a6c408fd"><img src="https://github.com/pklesk/qlparking/assets/23095311/58636ed2-6e13-4282-874b-64afff9de649"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/dad27043-045c-42b6-ba22-ab7041be2088"><img src="https://github.com/pklesk/qlparking/assets/23095311/e351ea7e-71c9-446e-8602-743a95b6bce3"/></a></td>
+    </tr>    
+</table>
+
+
+### Model: `4123751078` (scene: `"pp_random_car_random_side_20"`, 360° range also for initial random angles of park place, state representation switched from `"dv_flfrblbr2s_da"` to `"dv_flfrblbr2s_da_invariant`")
+
+#### Testing stage - generalization after 10k episodes
+
+<table>
+   <tr>
+      <td align="center">demo 16:</td>
+      <td align="center">demo 17:</td>
+      <td align="center">demo 18:</td>
+   </tr>   
+   <tr>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1d886842-adc5-4273-ad3e-95f6dbce12ef"><img src="https://github.com/pklesk/qlparking/assets/23095311/92d23a80-eb75-473c-a9ec-acf28746bc17"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/bc1adb70-df15-474c-a75c-a479a6c408fd"><img src="https://github.com/pklesk/qlparking/assets/23095311/58636ed2-6e13-4282-874b-64afff9de649"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/dad27043-045c-42b6-ba22-ab7041be2088"><img src="https://github.com/pklesk/qlparking/assets/23095311/e351ea7e-71c9-446e-8602-743a95b6bce3"/></a></td>
+    </tr>    
+</table>
