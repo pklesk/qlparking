@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s_da"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s_da_invariant"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -134,11 +134,7 @@ class Car:
         self.x_fr_history_.append(np.copy(self.x_fr_))
         self.x_bl_history_.append(np.copy(self.x_bl_))        
         self.x_br_history_.append(np.copy(self.x_br_))        
-        self.v_wrd_ = None # vector: car front to target park place front left ("wrd" means "with respect to car's direction vector", i.e. in relative coordinate system)        
-        self.to_park_place_fl2_wrd_ = None # vector: car front to target park place front left                          
-        self.to_park_place_fr2_wrd_ = None # vector: car front to target park place front right
-        self.to_park_place_bl2_wrd_ = None # vector: car back to target park place back left           
-        self.to_park_place_br2_wrd_ = None # vector: car back to target park place back right        
+        self.to_park_place_d_ahead_ = None        
         
     def _refresh_corners(self):
         self.x_fl_ = self.x_ + self.d_ahead_ * 0.5 * self.l_ -  self.d_right_ * 0.5 * self.w_
@@ -205,6 +201,7 @@ class Car:
         self.to_park_place_fl2_norm_ = np.linalg.norm(self.to_park_place_fl2_)
         self.to_park_place_br2_norm_ = np.linalg.norm(self.to_park_place_br2_)
         self.to_park_place_bl2_norm_ = np.linalg.norm(self.to_park_place_bl2_)
+        self.to_park_place_d_ahead_ = park_place.d_ahead_
         arg_arccos = max(min(self.d_ahead_.dot(park_place.d_ahead_), 1.0), -1.0)
         self.angle_distance_ = np.arccos(arg_arccos)
         self.distance_ = np.linalg.norm(self.x_ - park_place.x_)
@@ -212,22 +209,6 @@ class Car:
         if self.v_magnitude_ == 0.0:
             if self.distance_ <= CONST_PARKED_MAX_RELATIVE_DISTANCE_DEVIATION * park_place.width_ and self.angle_distance_ <= CONST_PARKED_MAX_ANGLE_DEVIATION:
                 self.parked_ = True
-        if False: # currently pieces of information below inactive (not to slow down computations; for further research on agent-centered state representations)        
-            angle = np.arctan2(self.v_[1], self.v_[0]) - self.angle_ahead_
-            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
-            self.v_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * np.linalg.norm(self.v_)
-            angle = np.arctan2(self.to_park_place_fr2_[1], self.to_park_place_fr2_[0]) - self.angle_ahead_
-            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])        
-            self.to_park_place_fr2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_fr2_norm_        
-            angle = np.arctan2(self.to_park_place_fl2_[1], self.to_park_place_fl2_[0]) - self.angle_ahead_
-            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])                
-            self.to_park_place_fl2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_fl2_norm_
-            angle = np.arctan2(self.to_park_place_br2_[1], self.to_park_place_br2_[0]) - self.angle_ahead_
-            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])                                                
-            self.to_park_place_br2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_br2_norm_
-            angle = np.arctan2(self.to_park_place_bl2_[1], self.to_park_place_bl2_[0]) - self.angle_ahead_
-            rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
-            self.to_park_place_bl2_wrd_ = rotation_matrix.dot(np.array([0.0, 1.0])) * self.to_park_place_bl2_norm_
                 
     def _check_collisions(self, obstacles):
         car_segments = [(self.x_fl_, self.x_fr_), (self.x_bl_, self.x_br_), (self.x_bl_, self.x_fl_), (self.x_br_, self.x_fr_)]
@@ -292,9 +273,18 @@ class Car:
 
     def _state_repr_dv_flfrblbr2s_dag(self):        
         return np.concatenate((self.d_ahead_, self.v_, self.to_park_place_fl2_, self.to_park_place_fr2_, self.to_park_place_bl2_, self.to_park_place_br2_, np.array([self.distance_, self.angle_distance_, self.gutter_distance_])))
-
-    def _state_repr_v1_flfrblbr2s_da_wrd(self):        
-        return np.concatenate((np.array([self.v_[1]]), self.to_park_place_fl2_wrd_, self.to_park_place_fr2_wrd_, self.to_park_place_bl2_wrd_, self.to_park_place_br2_wrd_, np.array([self.distance_, self.angle_distance_])))
+    
+    def _state_repr_dv_flfrblbr2s_da_invariant(self): # invariant w.r.t. park place rotation (assuming models trained on reference park place direction [-1.0, 0.0]) 
+        d_main = -self.to_park_place_d_ahead_ # minus due to models trained on fixed park place with reference d_ahead = [-1.0, 0.0] (should correspond to angle 0.0, hence the minus to convert it to [1.0, 0.0] before arctan2) 
+        angle = -np.arctan2(d_main[1], d_main[0])
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        d_ahead_invariant = rotation_matrix.dot(self.d_ahead_)
+        v_invariant = rotation_matrix.dot(self.v_)
+        tpp_fl2_invariant = rotation_matrix.dot(self.to_park_place_fl2_)
+        tpp_fr2_invariant = rotation_matrix.dot(self.to_park_place_fr2_)
+        tpp_bl2_invariant = rotation_matrix.dot(self.to_park_place_bl2_)
+        tpp_br2_invariant = rotation_matrix.dot(self.to_park_place_br2_)
+        return np.concatenate((d_ahead_invariant, v_invariant, tpp_fl2_invariant, tpp_fr2_invariant, tpp_bl2_invariant, tpp_br2_invariant, np.array([self.distance_, self.angle_distance_])))
        
     def get_state(self):
         return self.state_repr_function()

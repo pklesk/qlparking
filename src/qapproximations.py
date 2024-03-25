@@ -6,6 +6,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.exceptions import ConvergenceWarning
 import warnings
 import json
+import sys
 
 class QMLPRegressor(BaseEstimator, RegressorMixin):
 
@@ -114,7 +115,7 @@ class QMLPRegressor(BaseEstimator, RegressorMixin):
             params["n_actions"] = d["n_actions"]
             params["hidden_layer_sizes"] = d["hidden_layer_sizes"]
             params["n_steps"] = d["n_steps"]
-            params["ema_decay"] = np.float32(d["ema_decay"])
+            params["ema_decay"] = np.float64(d["ema_decay"])
             regressor = QMLPRegressor(**params)
             regressor.mlps_ = []
             mlps_loaded = d["mlps_"]
@@ -141,7 +142,7 @@ class QRidgeRegressor(BaseEstimator, RegressorMixin):
         self.ema_decay = ema_decay
         
     def __str__(self):
-        s = "{self.__class__.__name__}("
+        s = f"{self.__class__.__name__}("
         s += f"n_actions={self.n_actions}, "
         s += f"l2_penalty={self.l2_penalty}, " 
         s += f"fit_intercept={self.fit_intercept}, "
@@ -162,7 +163,7 @@ class QRidgeRegressor(BaseEstimator, RegressorMixin):
         self.intercepts_ = np.zeros(self.n_actions)        
         X_ext = np.copy(np.c_[np.ones((m, 1)), X]) if self.fit_intercept else X        
         if self.use_numba:
-            result = QRidgeRegression.fit_numba(X_ext, y, actions_taken, last_coefs, last_intercepts, self.n_actions, self.l2_penalty, self.fit_intercept, self.sample_size_factor)
+            result = QRidgeRegressor.fit_numba(X_ext, y, actions_taken, last_coefs, last_intercepts, self.n_actions, self.l2_penalty, self.fit_intercept, self.sample_size_factor)
             if self.fit_intercept:
                 self.intercepts_ = result[:, 0]
                 self.coefs_ = result[:, 1:]                  
@@ -245,4 +246,48 @@ class QRidgeRegressor(BaseEstimator, RegressorMixin):
     
     def average_with_other(self, other, fraction_other):
         self.coefs_ = (1.0 - fraction_other) * self.coefs_ + fraction_other * other.coefs_
-        self.intercepts_ = (1.0 - fraction_other) * self.intercepts_ + fraction_other * other.intercepts_                
+        self.intercepts_ = (1.0 - fraction_other) * self.intercepts_ + fraction_other * other.intercepts_    
+        
+    def json_dump(self, fname):
+        d = {}
+        d["__class__.__name__"] = self.__class__.__name__
+        d["n_actions"] = self.n_actions
+        d["l2_penalty"] = self.l2_penalty
+        d["fit_intercept"] = self.fit_intercept
+        d["sample_size_factor"] = self.sample_size_factor
+        d["use_numba"] = self.use_numba
+        d["ema_decay"] = self.ema_decay                
+                
+        if hasattr(self, "coefs_"):            
+            d["coefs_"] = self.coefs_.tolist()
+        if hasattr(self, "intercepts_"):            
+            d["intercepts_"] = self.intercepts_.tolist()            
+        try:
+            f = open(fname, "w+")
+            json.dump(d, f, indent=2)
+            f.close()
+        except IOError:
+            sys.exit(f"[error occurred when trying to dump regressor as json to file: {fname}]")
+            
+    @staticmethod
+    def json_load(fname):        
+        try:
+            f = open(fname, "r")
+            d = json.load(f)
+            params = {}
+            params["n_actions"] = d["n_actions"]
+            params["l2_penalty"] = d["l2_penalty"]
+            params["fit_intercept"] = d["fit_intercept"]
+            params["ema_decay"] = np.float64(d["sample_size_factor"])
+            params["use_numba"] = d["use_numba"]
+            params["ema_decay"] = np.float64(d["ema_decay"])
+                        
+            regressor = QRidgeRegressor(**params)
+            if "coefs_" in d:
+                regressor.coefs_ = np.array(d["coefs_"])
+            if "intercepts_" in d:
+                regressor.intercepts_ = np.array(d["intercepts_"])                
+            f.close()
+        except IOError:
+            sys.exit(f"[error occurred when trying to load regressor from json file: {fname}]")    
+        return regressor
