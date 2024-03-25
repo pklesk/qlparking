@@ -23,18 +23,18 @@ PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 # MAIN SETTINGS: LEARNING OR TESTING
 LEARNING_ON = False
 TEST_MODEL_NAME = "4123751078" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
-TEST_SCENE_FUNCTION_NAME = "pp_middle_side_20_angle_twopi" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
+TEST_SCENE_FUNCTION_NAME = "pp_random_car_random_side_20" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
 TEST_RANDOM_SEED = 1 
 TEST_EPI_SEEDS = [] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
-TEST_N_EPISODES = 1000
-TEST_ANIMATION_ON = True
+TEST_N_EPISODES = 1000 
+TEST_ANIMATION_ON = False 
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
 EXPERIENCE_BUFFER_MAX_SIZE = int(5 * 10**7)
 LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY = 0.995
 DEMO_TITLE_LINE_1 = "TESTING STAGE" 
-DEMO_TITLE_LINE_2 = "(PARK PLACE FIXED, CAR IN ANY INITIAL POSITION AND ANGLE)"
+DEMO_TITLE_LINE_2 = "(ANY INITIAL POSITION AND ANGLE FOR PARK PLACE AND CAR WITHIN 20m x 20m)"
 
 # DICTIONARIES OF PREDEFINED: TRANSFORMERS, APPROXIMATORS
 TRANSFORMERS = {
@@ -207,7 +207,7 @@ def draw_dashed_line(surface, color, start_pos, end_pos, dash_length=4):
             pygame.draw.line(surface, color, (x1 + dx * i * dash_length, y1 + dy * i * dash_length),
                              (x1 + dx * (i + 1) * dash_length, y1 + dy * (i + 1) * dash_length), 1)
 
-def draw_intro(screen, ehs, title_line_1, title_line_2=None):
+def draw_intro(screen, ehs, title_line_1, title_line_2=None, smaller_title_line_2=True):
     screen.fill((0, 0, 0))    
     font = pygame.font.SysFont(TEXT_INTRO_FONT_NAME, TEXT_INTRO_MESSAGE_FONT_SIZE)     
     title_current_y = SCREEN_RESOLUTION[1] // 2 - 1 * TEXT_INTRO_MESSAGE_FONT_SIZE
@@ -216,6 +216,8 @@ def draw_intro(screen, ehs, title_line_1, title_line_2=None):
     screen.blit(text_img, text_rect)
     title_current_y += TEXT_INTRO_MESSAGE_FONT_SIZE
     if title_line_2 is not None:
+        if smaller_title_line_2:
+            font = pygame.font.SysFont(TEXT_INTRO_FONT_NAME, TEXT_INTRO_MESSAGE_FONT_SIZE // 2)
         text_img = font.render(title_line_2, True, COLOR_TEXT_INTRO)
         text_rect = text_img.get_rect(center=(SCREEN_RESOLUTION[0] // 2, title_current_y))
         screen.blit(text_img, text_rect)
