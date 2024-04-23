@@ -101,14 +101,9 @@
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/8cdb1b36-002c-47d4-a15e-4396c5e69bff"><img src="https://github.com/pklesk/qlparking/assets/23095311/b7f0a00b-233e-4dbd-a191-043df9e56c90"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/7fd077d5-27c9-413a-b703-c66478626462"><img src="https://github.com/pklesk/qlparking/assets/23095311/903f1879-c0f1-4774-9295-780d19d8ba57"/></a></td>
-      <td><a href="TODO"><img src="https://github.com/pklesk/qlparking/assets/23095311/50433dd0-97b0-45bd-98bf-4fb5e0c17c73"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/39ac961e-5acb-4885-8903-1d764abceeca"><img src="https://github.com/pklesk/qlparking/assets/23095311/3d147961-91a2-4d1a-a4d5-e5ffae07e62f"/></a></td>
     </tr>    
 </table>
-
-
-
-
-
 
 
 
