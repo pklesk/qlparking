@@ -99,11 +99,12 @@
       <td align="center">demo 21:</td>
    </tr>   
    <tr>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/8cdb1b36-002c-47d4-a15e-4396c5e69bff"><img src="https://github.com/pklesk/qlparking/assets/23095311/3d6b7a62-743f-4386-998d-9d8a1497115b"/></a></td>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/7fd077d5-27c9-413a-b703-c66478626462"><img src="https://github.com/pklesk/qlparking/assets/23095311/4aaa75b7-a904-48fb-9923-06bd912bf768"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/8cdb1b36-002c-47d4-a15e-4396c5e69bff"><img src="https://github.com/pklesk/qlparking/assets/23095311/b7f0a00b-233e-4dbd-a191-043df9e56c90"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/7fd077d5-27c9-413a-b703-c66478626462"><img src="https://github.com/pklesk/qlparking/assets/23095311/903f1879-c0f1-4774-9295-780d19d8ba57"/></a></td>
       <td><a href="TODO"><img src="https://github.com/pklesk/qlparking/assets/23095311/50433dd0-97b0-45bd-98bf-4fb5e0c17c73"/></a></td>
     </tr>    
 </table>
+
 
 
 
