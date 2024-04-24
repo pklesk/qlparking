@@ -90,8 +90,20 @@
     </tr>    
 </table>
 
+### First trials with obstacles and sensors - model: `0761736806` (scene: `"pp_middle_obstacles_oppdist_1_side_10_angle_pi"`, representation `"dv_flfrblbr2s_da_invariant_sensors`")
 
-
+<table>
+   <tr>
+      <td align="center">demo 19:</td>
+      <td align="center">demo 20:</td>
+      <td align="center">demo 21:</td>
+   </tr>   
+   <tr>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/8cdb1b36-002c-47d4-a15e-4396c5e69bff"><img src="https://github.com/pklesk/qlparking/assets/23095311/b7f0a00b-233e-4dbd-a191-043df9e56c90"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/7fd077d5-27c9-413a-b703-c66478626462"><img src="https://github.com/pklesk/qlparking/assets/23095311/903f1879-c0f1-4774-9295-780d19d8ba57"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/39ac961e-5acb-4885-8903-1d764abceeca"><img src="https://github.com/pklesk/qlparking/assets/23095311/3d147961-91a2-4d1a-a4d5-e5ffae07e62f"/></a></td>
+    </tr>    
+</table>
 
 
 
