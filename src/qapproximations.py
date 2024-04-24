@@ -119,7 +119,7 @@ class QMLPRegressor(BaseEstimator, RegressorMixin):
             regressor = QMLPRegressor(**params)
             regressor.mlps_ = []
             mlps_loaded = d["mlps_"]
-            for a  in range(regressor.n_actions):
+            for a in range(regressor.n_actions):
                 regressor.mlps_.append(MLPRegressor(hidden_layer_sizes=regressor.hidden_layer_sizes, max_iter=regressor.n_steps, warm_start=True, batch_size=128, learning_rate_init=1e-4, random_state=0))
                 regressor.mlps_[a].coefs_ = []
                 regressor.mlps_[a].intercepts_ = []
@@ -129,7 +129,101 @@ class QMLPRegressor(BaseEstimator, RegressorMixin):
             f.close()
         except IOError:
             sys.exit(f"[error occurred when trying to load regressor from json file: {fname}]")    
-        return regressor            
+        return regressor
+    
+class QMLPRegressorShared(BaseEstimator, RegressorMixin):
+
+    def __init__(self, n_actions, hidden_layer_sizes, n_steps=1, batch_size=128, learning_rate=1e-4, random_state=0, ema_decay=0.0):
+        self.n_actions = n_actions
+        self.hidden_layer_sizes = hidden_layer_sizes
+        self.n_steps = n_steps
+        self.ema_decay = ema_decay
+        self.batch_size = batch_size 
+        self.learning_rate = learning_rate
+        self.random_state = random_state
+        
+        warnings.filterwarnings("ignore", category=ConvergenceWarning)
+        
+    def __str__(self):
+        s = f"{self.__class__.__name__}("
+        s += f"n_actions={self.n_actions}, "
+        s += f"hidden_layer_sizes={self.hidden_layer_sizes}, " 
+        s += f"n_steps={self.n_steps}, "
+        s += f"batch_size={self.batch_size}, "
+        s += f"learning_rate={self.learning_rate}, "
+        s += f"random_state={self.random_state}, "
+        s += f"ema_decay: {self.ema_decay})"
+        return s
+        
+    def __repr__(self):
+        return self.__str__()      
+        
+    def fit(self, X, y, actions_taken=None):
+        if self.ema_decay > 0.0:
+            last_coefs = []
+            last_intercepts = []
+            for l in range(len(self.hidden_layer_sizes)):
+                last_coefs.append(np.copy(self.mlp_.coefs_[l]))
+                last_intercepts.append(np.copy(self.mlp_.intercepts_[l]))                
+        if not hasattr(self, "mlp_"):
+            self.mlp_ = MLPRegressor(hidden_layer_sizes=self.hidden_layer_sizes, max_iter=self.n_steps, batch_size=self.batch_size, learning_rate_init=self.learning_rate, random_state=self.random_state, warm_start=True)                    
+        self.mlp_.fit(X, y)
+        if self.ema_decay > 0.0 and len(last_coefs) > 0:
+            for l in range(len(self.hidden_layer_sizes)):                            
+                self.mlp_.coefs_[l] = self.ema_decay * last_coefs[l] + (1.0 - self.ema_decay) * self.mlp_.coefs_[l]
+                self.mlp_.intercepts_[l] = self.ema_decay * last_intercepts[l] + (1.0 - self.ema_decay) * self.mlp_.intercepts_[l]             
+                                    
+    def predict(self, X):         
+        return self.mlp_.predict(X)
+    
+    def average_with_other(self, other, fraction_other):
+        for l in range(len(self.hidden_layer_sizes)):                            
+            self.mlp_.coefs_[l] = (1.0 - fraction_other) * self.mlp_.coefs_[l] + fraction_other * other.mlp_.coefs_[l]
+            self.mlp_.intercepts_[l] = (1.0 - fraction_other) * self.mlp_.intercepts_[l] + fraction_other * other.mlp_.intercepts_[l]
+               
+    def json_dump(self, fname):
+        d = {}
+        d["__class__.__name__"] = self.__class__.__name__
+        d["n_actions"] = self.n_actions
+        d["hidden_layer_sizes"] = self.hidden_layer_sizes
+        d["n_steps"] = self.n_steps
+        d["ema_decay"] = self.ema_decay
+        mlps_to_dump = [] # 1-element long list (1 shared mlp)
+        if hasattr(self, "mlp_"):
+            mlp_to_dump = []
+            for l in range(len(self.hidden_layer_sizes)):
+                mlp_to_dump.append({"coefs_": self.mlp_.coefs_[l].tolist(), "intercepts_": self.mlp_.intercepts_[l].tolist()})
+            mlps_to_dump.append(mlp_to_dump)
+        d["mlps_"] = mlps_to_dump
+        try:
+            f = open(fname, "w+")
+            json.dump(d, f, indent=2)
+            f.close()
+        except IOError:
+            sys.exit(f"[error occurred when trying to dump regressor as json to file: {fname}]")
+            
+    @staticmethod
+    def json_load(fname):        
+        try:
+            f = open(fname, "r")
+            d = json.load(f)
+            params = {}
+            params["n_actions"] = d["n_actions"]
+            params["hidden_layer_sizes"] = d["hidden_layer_sizes"]
+            params["n_steps"] = d["n_steps"]
+            params["ema_decay"] = np.float64(d["ema_decay"])
+            regressor = QMLPRegressorShared(**params)   
+            mlps_loaded = d["mlps_"] # 1-element long list (1 shared mlp)
+            regressor.mlp_ = MLPRegressor(hidden_layer_sizes=regressor.hidden_layer_sizes, max_iter=regressor.n_steps, warm_start=True, batch_size=128, learning_rate_init=1e-4, random_state=0)
+            regressor.mlp_.coefs_ = []
+            regressor.mlp_.intercepts_ = []
+            for l in range(len(regressor.hidden_layer_sizes)):
+                regressor.mlp_.coefs_.append(np.array(mlps_loaded[0][l]["coefs_"]))
+                regressor.mlp_.intercepts_.append(np.array(mlps_loaded[0][l]["intercepts_"]))
+            f.close()
+        except IOError:
+            sys.exit(f"[error occurred when trying to load regressor from json file: {fname}]")    
+        return regressor              
 
 class QRidgeRegressor(BaseEstimator, RegressorMixin):
 

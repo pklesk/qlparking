@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s_da_invariant"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s_da"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -173,6 +173,8 @@ class Car:
                         ts, to = solve_lines_intersection(self.x_, sx, ox1, ox2)
                         if ts >= 0.0 and to >= 0.0 and to <= 1.0:
                             value = np.linalg.norm(ox1 + to * (ox2 - ox1) - sx)
+                            if ts <= 1.0:
+                                value = -value # how deep collision
                             if value < sensor_values[si]:
                                 sensor_values[si] = value
                                                                 
@@ -223,11 +225,11 @@ class Car:
                         self.collision_x_= ox1 + to * (ox2 - ox1)
                         return                
     
-    def _refresh_reward(self, dt_since_action, time_remaining=0.0):                                            
+    def _refresh_reward(self, dt_since_action):                                            
         if self.collided_:
-            self.reward_ = REWARD_COLLIDED * time_remaining / dt_since_action # 'reward' for collided state is assumed to last until end of episode
+            self.reward_ = REWARD_COLLIDED
         elif self.parked_:
-            self.reward_ = REWARD_PARKED * time_remaining / dt_since_action # reward for parked is assumed to last until end of episode
+            self.reward_ = REWARD_PARKED 
         else:
             self.reward_ = -dt_since_action            
             self.reward_ += -REWARD_PENALTY_COEF_DISTANCE * self.distance_
@@ -285,6 +287,19 @@ class Car:
         tpp_bl2_invariant = rotation_matrix.dot(self.to_park_place_bl2_)
         tpp_br2_invariant = rotation_matrix.dot(self.to_park_place_br2_)
         return np.concatenate((d_ahead_invariant, v_invariant, tpp_fl2_invariant, tpp_fr2_invariant, tpp_bl2_invariant, tpp_br2_invariant, np.array([self.distance_, self.angle_distance_])))
+
+    def _state_repr_dv_flfrblbr2s_da_invariant_sensors(self): # invariant w.r.t. park place rotation (assuming models trained on reference park place direction [-1.0, 0.0]) 
+        d_main = -self.to_park_place_d_ahead_ # minus due to models trained on fixed park place with reference d_ahead = [-1.0, 0.0] (should correspond to angle 0.0, hence the minus to convert it to [1.0, 0.0] before arctan2) 
+        angle = -np.arctan2(d_main[1], d_main[0])
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        d_ahead_invariant = rotation_matrix.dot(self.d_ahead_)
+        v_invariant = rotation_matrix.dot(self.v_)
+        tpp_fl2_invariant = rotation_matrix.dot(self.to_park_place_fl2_)
+        tpp_fr2_invariant = rotation_matrix.dot(self.to_park_place_fr2_)
+        tpp_bl2_invariant = rotation_matrix.dot(self.to_park_place_bl2_)
+        tpp_br2_invariant = rotation_matrix.dot(self.to_park_place_br2_)
+        return np.concatenate((d_ahead_invariant, v_invariant, tpp_fl2_invariant, tpp_fr2_invariant, tpp_bl2_invariant, tpp_br2_invariant, np.array([self.distance_, self.angle_distance_]), 
+                               self.sensors_front_values_, self.sensors_back_values_, self.sensors_left_values_, self.sensors_right_values_))           
        
     def get_state(self):
         return self.state_repr_function()
@@ -361,7 +376,7 @@ class Car:
         if time_remaining - dt <= 0.0:
             self.time_exceeded_ = True         
         self._refresh_to_park_place_vectors(park_place)      
-        self._refresh_reward(dt_since_action, time_remaining)
+        self._refresh_reward(dt_since_action)
         # memorize some history
         self.x_history_.append(np.copy(self.x_))
         self.x_fl_history_.append(np.copy(self.x_fl_))
@@ -394,10 +409,10 @@ class Obstacle:
         self.xs_ = xs
         
 class Scene:
-    def __init__(self, dt, car, park_place, obstacles=[]):
+    def __init__(self, car, park_place, obstacles=[]):
         self.car_ = car
         self.park_place_ = park_place
         self.obstacles_ = obstacles
         self.car_._refresh_sensors_values(obstacles)
         self.car_._refresh_to_park_place_vectors(park_place)
-        self.car_._refresh_reward(dt)
+        self.car_._refresh_reward(0.0)

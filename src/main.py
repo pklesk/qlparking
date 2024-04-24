@@ -7,7 +7,7 @@ import time
 import itertools
 import pickle
 from copy import deepcopy
-from qapproximations import QRidgeRegressor, QMLPRegressor
+from qapproximations import QRidgeRegressor, QMLPRegressor, QMLPRegressorShared
 from sklearn.preprocessing import PolynomialFeatures
 import ctypes
 
@@ -21,20 +21,20 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = False
-TEST_MODEL_NAME = "4123751078" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
-TEST_SCENE_FUNCTION_NAME = "pp_random_car_random_side_20" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
+LEARNING_ON = False # if False then testing mode
+TEST_MODEL_NAME = "2354513149" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
+TEST_SCENE_FUNCTION_NAME = None # if None then equivalent to QL_SCENE_FUNCTION_NAME 
 TEST_RANDOM_SEED = 1 
 TEST_EPI_SEEDS = [] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
 TEST_N_EPISODES = 1000 
-TEST_ANIMATION_ON = False 
+TEST_ANIMATION_ON = True
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_EXTRAS = "../extras/"
 EXPERIENCE_BUFFER_MAX_SIZE = int(5 * 10**7)
 LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY = 0.995
-DEMO_TITLE_LINE_1 = "TESTING STAGE" 
-DEMO_TITLE_LINE_2 = "(ANY INITIAL POSITION AND ANGLE FOR PARK PLACE AND CAR WITHIN 20m x 20m)"
+DEMO_TITLE_LINE_1 = None
+DEMO_TITLE_LINE_2 = None
 
 # DICTIONARIES OF PREDEFINED: TRANSFORMERS, APPROXIMATORS
 TRANSFORMERS = {
@@ -48,6 +48,12 @@ APPROXIMATORS = {
     "qmlp_medium": QMLPRegressor(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(512, 128, 64, 32), batch_size=128, learning_rate=1e-4, random_state=0, ema_decay=0.0),
     "qmlp_large": QMLPRegressor(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(512, 256, 128, 64), batch_size=128, learning_rate=1e-4, random_state=0, ema_decay=0.0),
     "qmlp_large_deeper": QMLPRegressor(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(512, 256, 128, 64, 32), batch_size=128, learning_rate=1e-4, random_state=0, ema_decay=0.0),
+    "qmlp_very_large": QMLPRegressor(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(1024, 512, 256, 128), batch_size=128, learning_rate=1e-4, random_state=0, ema_decay=0.0),
+    "qmlp_shared_small": QMLPRegressorShared(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(256, 128, 64, 32), batch_size=128, learning_rate=1e-3, random_state=0, ema_decay=0.0),
+    "qmlp_shared_medium": QMLPRegressorShared(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(512, 128, 64, 32), batch_size=128, learning_rate=1e-3, random_state=0, ema_decay=0.0),
+    "qmlp_shared_large": QMLPRegressorShared(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(512, 256, 128, 64), batch_size=128, learning_rate=1e-3, random_state=0, ema_decay=0.0),
+    "qmlp_shared_large_deeper": QMLPRegressorShared(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(512, 256, 128, 64, 32), batch_size=128, learning_rate=1e-3, random_state=0, ema_decay=0.0),
+    "qmlp_shared_very_large": QMLPRegressorShared(n_actions=len(ACTION_PAIRS), hidden_layer_sizes=(2048, 1024, 512, 256), batch_size=128, learning_rate=1e-3, random_state=0, ema_decay=0.0),    
     "qridge_1e1_090": QRidgeRegressor(n_actions=len(ACTION_PAIRS), l2_penalty=1e1, fit_intercept=True, use_numba=True, ema_decay=0.90),    
     "qridge_1e2_095": QRidgeRegressor(n_actions=len(ACTION_PAIRS), l2_penalty=1e2, fit_intercept=True, use_numba=True, ema_decay=0.95),    
     "qridge_1e3_095": QRidgeRegressor(n_actions=len(ACTION_PAIRS), l2_penalty=1e3, fit_intercept=True, use_numba=True, ema_decay=0.95),
@@ -56,12 +62,12 @@ APPROXIMATORS = {
 
 # CONSTANTS FOR Q-LEARNING AND SIMULATION 
 QL_RANDOM_SEED = 0
-QL_DT = 0.025 # [s] # 0.025
+QL_DT = 0.025 # [s]
 QL_FPS = int(round(1.0 / QL_DT))
 QL_ANIMATION_ON = True
 QL_ANIMATION_FREQUENCY = 250
 QL_STEERING_GAP_STEPS = 4
-QL_N_EPISODES = 10**4  
+QL_N_EPISODES = 1 * 10**4  
 QL_EPISODE_TIME_LIMIT = 25.0 # [s]
 QL_COLLECT_EXPERIENCE_PROBABILITY = 1.0
 QL_GAMMA = 0.99
@@ -70,16 +76,16 @@ QL_EPS_MIN = 0.1
 QL_EPS_MIN_AT_EPISODE = QL_N_EPISODES
 QL_FIT_GAP_EPISODES = 20
 QL_FIRST_FIT_AT_EPISODE = 200 
-QL_FIT_BATCH_SIZE = 4 * 65536
+QL_FIT_BATCH_SIZE = 1 * 65536
 QL_ORACLE_SWITCHING = True
 QL_ORACLE_FIRST_SWITCH_AFTER_EPISODE = 1000
 QL_ORACLE_SWITCH_GAP_EPISODES = 500  
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "pp_middle_side_20_angle_twopi"  
+QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi" # TODO "pp_middle_obstacles_oppdist_1_side_10_angle_pi"  
 QL_TRANSFORMER = TRANSFORMERS["poly_1"]
-QL_APPROXIMATOR = APPROXIMATORS["qmlp_large"]
+QL_APPROXIMATOR = APPROXIMATORS["qmlp_small"] # "qmlp_small"
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
 
 # DRAWING CONSTANTS
@@ -446,7 +452,7 @@ def scene_pp_west_side_10_angle_halfpi():
     random_angle = (2.0 * np.random.rand() - 1.0) * 0.5 * angle_range    
     car = Car(x=np.array([east_x, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)    
     obstacles = []        
-    scene = Scene(QL_DT, car, park_place, obstacles)
+    scene = Scene(car, park_place, obstacles)
     return scene
 
 def scene_pp_west_side_10_angle_pi():
@@ -461,7 +467,7 @@ def scene_pp_west_side_10_angle_pi():
     random_angle = (2.0 * np.random.rand() - 1.0) * 0.5 * angle_range    
     car = Car(x=np.array([east_x, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)    
     obstacles = []        
-    scene = Scene(QL_DT, car, park_place, obstacles)
+    scene = Scene(car, park_place, obstacles)
     return scene
 
 def scene_pp_westeast_side_10_angle_pi():
@@ -476,13 +482,13 @@ def scene_pp_westeast_side_10_angle_pi():
         ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
         park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))        
         car = Car(x=np.array([east_x, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)    
-        scene = Scene(QL_DT, car, park_place, obstacles=[])
+        scene = Scene(car, park_place, obstacles=[])
     else:    
         ppfl = np.array([east_x + 0.5 * PARK_PLACE_LENGTH, 0.5 * PARK_PLACE_WIDTH])    
         ppfr = ppfl + np.array([0.0, -PARK_PLACE_WIDTH])
         park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([-PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([-PARK_PLACE_LENGTH, 0.0]))
         car = Car(x=np.array([west_x, 0.0]) + random_shift, angle=-(0.5 * np.pi + random_angle))
-        scene = Scene(QL_DT, car, park_place, obstacles=[])        
+        scene = Scene(car, park_place, obstacles=[])        
     return scene
 
 def scene_pp_middle_side_20_angle_twopi():
@@ -496,7 +502,7 @@ def scene_pp_middle_side_20_angle_twopi():
     middle_x = np.array([0.0, 0.0]) 
     car = Car(x=middle_x + random_shift, angle=0.5 * np.pi + random_angle)
     obstacles = []
-    scene = Scene(QL_DT, car, park_place, obstacles)
+    scene = Scene(car, park_place, obstacles)
     return scene
 
 def scene_pp_random_car_random_side_20():
@@ -520,24 +526,144 @@ def scene_pp_random_car_random_side_20():
     car_random_angle = (2 * np.random.rand() - 1) * 0.5 * car_angle_range
     car = Car(x=np.array([0.0, 0.0]) + car_random_shift, angle=0.5 * np.pi + car_random_angle)
     obstacles = []
-    scene = Scene(QL_DT, car, park_place, obstacles)
+    scene = Scene(car, park_place, obstacles)
     return scene
 
-
 def scene_obstacles_1():
+    car_side = 10.0
+    car_angle_range = 0.5 * np.pi   
     ppfl = np.array([-14.0, -6.0])    
     ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
     park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
     obstacles = [
-        Obstacle([ppfr + np.array([0.0, 4.0]), ppfr + np.array([0.0, 4.0 + 3 * PARK_PLACE_WIDTH]), ppfr + np.array([PARK_PLACE_LENGTH, 4.0 + 3 * PARK_PLACE_WIDTH]), ppfr + np.array([PARK_PLACE_LENGTH, 4.0])]),
-        Obstacle([ppfl + np.array([0.0, -4.0]), ppfl + np.array([0.0, -4.0 - 3 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH, -4.0 - 3 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH, -4.0])])
+        #Obstacle([ppfr + np.array([0.0, 1.0]), ppfr + np.array([0.0, 1.0 + 2 * PARK_PLACE_WIDTH]), ppfr + np.array([PARK_PLACE_LENGTH * 1.5, 1.0 + 2 * PARK_PLACE_WIDTH]), ppfr + np.array([PARK_PLACE_LENGTH * 1.5, 1.0])]),
+        Obstacle([ppfl + np.array([0.0, -1.0]), ppfl + np.array([0.0, -1.0 - 2 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH * 1.5, -1.0 - 2 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH * 1.5, -1.0])])
         ]    
-    car = Car(x=np.array([2.0, -6.0 + PARK_PLACE_WIDTH * 0.5]), angle=0.5 * np.pi)
-    scene = Scene(QL_DT, car, park_place, obstacles)
+    car_random_shift = np.array([(2 * np.random.rand() - 1) * 0.5 * car_side, (2 * np.random.rand() - 1) * 0.5 * car_side])
+    car_random_angle = (2 * np.random.rand() - 1) * 0.5 * car_angle_range
+    car = Car(x=np.array([10.0, 0.0]) + car_random_shift, angle=0.5 * np.pi + car_random_angle)
+    scene = Scene(car, park_place, obstacles)
     return scene
 
+def scene_obstacles_and_pole_angle_halfpi():
+    west_x = -12.5
+    east_x = 12.5
+    side = 10.0
+    angle_range = 0.5 * np.pi
+    ppfl = np.array([west_x - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
+    ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
+    park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))    
+    random_shift = np.array([(2.0 * np.random.rand() - 1.0) * 0.5 * side, (2.0 * np.random.rand() - 1.0) * 0.5 * side]) 
+    random_angle = (2.0 * np.random.rand() - 1.0) * 0.5 * angle_range    
+    car = Car(x=np.array([east_x, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)
+    o_pp_dist = 1.0 
+    o_shift = np.array([0.0, 3 * PARK_PLACE_WIDTH + 2 * o_pp_dist])
+    o_central_radius = 1.0
+    obstacles = [
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]), ppfl + np.array([0.0, -o_pp_dist - 2 * PARK_PLACE_WIDTH]), 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 2 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist])]),
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]) + o_shift, ppfl + np.array([0.0, -o_pp_dist - 2 * PARK_PLACE_WIDTH]) + o_shift, 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 2 * PARK_PLACE_WIDTH]) + o_shift, ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist]) + o_shift]),
+        Obstacle([np.array([-o_central_radius, o_central_radius]), np.array([o_central_radius, o_central_radius]), 
+                  np.array([o_central_radius, -o_central_radius]), np.array([-o_central_radius, -o_central_radius])])                        
+        ]    
+    scene = Scene(car, park_place, obstacles)
+    return scene
+
+def scene_pp_middle_obstacles_car_westeast_side_10_angle_twopi():
+    side = 10.0
+    angle_range = 2.0 * np.pi
+    ppfl = np.array([0.0 - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])
+    ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
+    park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))
+    random_shifts = [np.array([PARK_PLACE_LENGTH + 0.5 * side + (2.0 * np.random.rand() - 1.0) * 0.5 * side, (2.0 * np.random.rand() - 1.0) * 0.5 * side]),
+                     np.array([-PARK_PLACE_LENGTH - 0.5 * side + (2.0 * np.random.rand() - 1.0) * 0.5 * side, (2.0 * np.random.rand() - 1.0) * 0.5 * side])]                        
+    random_shift = random_shifts[np.random.randint(2)]
+    random_angle = (2.0 * np.random.rand() - 1.0) * 0.5 * angle_range
+    middle_x = np.array([0.0, 0.0]) 
+    car = Car(x=middle_x + random_shift, angle=0.5 * np.pi + random_angle)
+    o_pp_dist = 1.0 
+    o_shift = np.array([0.0, 2 * PARK_PLACE_WIDTH + 2 * o_pp_dist])
+    obstacles = [
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]), ppfl + np.array([0.0, -o_pp_dist - 1 * PARK_PLACE_WIDTH]), 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist])]),
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]) + o_shift, ppfl + np.array([0.0, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist]) + o_shift])                        
+        ]    
+
+    scene = Scene(car, park_place, obstacles)
+    return scene
+
+def scene_pp_west_obstacles_side_10_angle_pi():
+    west_x = -10.0
+    east_x = 10.0
+    side = 10.0
+    angle_range = 1.0 * np.pi
+    ppfl = np.array([west_x - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
+    ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
+    park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))    
+    random_shift = np.array([(2.0 * np.random.rand() - 1.0) * 0.5 * side, (2.0 * np.random.rand() - 1.0) * 0.5 * side])    
+    random_angle = (2.0 * np.random.rand() - 1.0) * 0.5 * angle_range    
+    car = Car(x=np.array([east_x, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)
+    o_pp_dist = 1.0 
+    o_shift = np.array([0.0, 2 * PARK_PLACE_WIDTH + 2 * o_pp_dist])    
+    obstacles = [
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]), ppfl + np.array([0.0, -o_pp_dist - 1 * PARK_PLACE_WIDTH]), 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist])]),
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]) + o_shift, ppfl + np.array([0.0, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist]) + o_shift])                        
+        ]    
+    scene = Scene(car, park_place, obstacles)
+    return scene
+
+def scene_pp_middle_obstacles_oppdist_1_side_10_angle_pi():
+    west_x = 0.0
+    east_x = 10.0
+    side = 10.0
+    angle_range = 1.0 * np.pi
+    ppfl = np.array([west_x - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
+    ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
+    park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))    
+    random_shift = np.array([(2.0 * np.random.rand() - 1.0) * 0.5 * side, (2.0 * np.random.rand() - 1.0) * 0.5 * side])    
+    random_angle = (2.0 * np.random.rand() - 1.0) * 0.5 * angle_range    
+    car = Car(x=np.array([east_x, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)
+    o_pp_dist = 1.0 
+    o_shift = np.array([0.0, 2 * PARK_PLACE_WIDTH + 2 * o_pp_dist])    
+    obstacles = [
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]), ppfl + np.array([0.0, -o_pp_dist - 1 * PARK_PLACE_WIDTH]), 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist])]),
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]) + o_shift, ppfl + np.array([0.0, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist]) + o_shift])                        
+        ]    
+    scene = Scene(car, park_place, obstacles)
+    return scene
+
+def scene_pp_middle_obstacles_oppdist_05_side_10_angle_pi():
+    west_x = 0.0
+    east_x = 10.0
+    side = 10.0
+    angle_range = 1.0 * np.pi
+    ppfl = np.array([west_x - 0.5 * PARK_PLACE_LENGTH, -0.5 * PARK_PLACE_WIDTH])    
+    ppfr = ppfl + np.array([0.0, PARK_PLACE_WIDTH])
+    park_place = ParkPlace(ppfl, ppfr, ppfl + np.array([PARK_PLACE_LENGTH, 0.0]), ppfr + np.array([PARK_PLACE_LENGTH, 0.0]))    
+    random_shift = np.array([(2.0 * np.random.rand() - 1.0) * 0.5 * side, (2.0 * np.random.rand() - 1.0) * 0.5 * side])    
+    random_angle = (2.0 * np.random.rand() - 1.0) * 0.5 * angle_range    
+    car = Car(x=np.array([east_x, 0.0]) + random_shift, angle=0.5 * np.pi + random_angle)
+    o_pp_dist = 0.5 
+    o_shift = np.array([0.0, 2 * PARK_PLACE_WIDTH + 2 * o_pp_dist])    
+    obstacles = [
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]), ppfl + np.array([0.0, -o_pp_dist - 1 * PARK_PLACE_WIDTH]), 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]), ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist])]),
+        Obstacle([ppfl + np.array([0.0, -o_pp_dist]) + o_shift, ppfl + np.array([0.0, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, 
+                  ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist]) + o_shift])                        
+        ]    
+    scene = Scene(car, park_place, obstacles)
+    return scene
+
+
 # MAIN
-if __name__ == "__main__":    
+if __name__ == "__main__":
+            
     print("CAR PARKING EXPERIMENT...")
     ehs = experiment_hash_str() 
     print(f"EXPERIMENT HASH: {ehs}")
@@ -662,18 +788,30 @@ if __name__ == "__main__":
                 if (steering_now and collect_next_experience) or epi_stop_condition:
                     next_state = car.get_state()
                     action = ACTION_PAIRS_INDEXER[tuple(action_pair)]
+                    terminal = car.parked_ or car.collided_
                     experience = np.empty((1, 6), dtype=object)
                     experience[0, 0] = state
                     experience[0, 1] = action
                     experience[0, 2] = car.reward_
                     experience[0, 3] = next_state                    
-                    experience[0, 4] = car.parked_
-                    experience[0, 5] = 0.0 # Bellman error (for the case of prioritized experience replay, updateable after fits)                   
+                    experience[0, 4] = terminal 
+                    experience[0, 5] = 0.0 # Bellman error (for the case of prioritized experience replay, updataeble after fits)                   
                     epi_eb[epi_eb_size] = experience
                     epi_eb_size += 1
+                    if False and terminal: # additional experiences (currently off) for terminal states -> no matter what action taken in them, the next state and reward state the same (for targets preparation purposes in ML)
+                        for a in range(len(ACTION_PAIRS)):
+                            experience = np.empty((1, 6), dtype=object)
+                            experience[0, 0] = next_state
+                            experience[0, 1] = a
+                            experience[0, 2] = car.reward_
+                            experience[0, 3] = next_state                    
+                            experience[0, 4] = terminal 
+                            experience[0, 5] = 0.0 # Bellman error (for the case of prioritized experience replay, updataeble after fits)                   
+                            epi_eb[epi_eb_size] = experience
+                            epi_eb_size += 1                                                    
             if (steering_now and collect_next_reward) or epi_stop_condition:                        
                 rewards_total += car.reward_
-                rewards_count += 1
+                rewards_count += 1                
             if epi_stop_condition:
                 if epi_animate:
                     draw_scene(screen, scene, time_elapsed, None)
@@ -682,9 +820,7 @@ if __name__ == "__main__":
                     pygame.quit()
                 t2 = time.time()
                 if car.parked_:
-                    parked_count += 1
-                    rewards_total += car.reward_
-                    rewards_count += 1                    
+                    parked_count += 1                    
                 parked_frequency = parked_count / (epi + 1)
                 break
             if steering_now and not antistuck_nudge_ongoing:
@@ -742,7 +878,7 @@ if __name__ == "__main__":
             if epi_animate:  
                 draw_scene(screen, scene, time_elapsed, Q_pred)
                 pygame.display.flip()                                         
-            if QL_ANTISTUCK_NUDGE and steering_now and not manual_steering and not antistuck_nudge_ongoing: # random nudge (if not yet parked, and not about to move, do random acceleration ahead or back)                
+            if QL_ANTISTUCK_NUDGE and steering_now and not manual_steering and not antistuck_nudge_ongoing: # random nudge (if not yet parked, and not about to move, do random acceleration ahead or back)                        
                 if car.v_magnitude_ == 0.0 and car.a_magnitude_ == 0.0 or car.is_stuck(QL_DT):
                     non_side_acceleration_indexes = np.array([ACTION_PAIRS_INDEXER[(-1, 0)], ACTION_PAIRS_INDEXER[(1, 0)]])
                     action_index = np.random.choice(non_side_acceleration_indexes)
@@ -750,7 +886,7 @@ if __name__ == "__main__":
                     antistuck_nudge_ongoing = True
                     antistuck_nudge_steering_steps = QL_ANTISTUCK_NUDGE_STEERING_STEPS
                     antistuck_nudge_count += 1        
-                    # print(f"[antistuck nudge: {antistuck_nudge_count}]")                                                                                                   
+                    # print(f"[antistuck nudge: {antistuck_nudge_count}]") 
             car.step(QL_DT, dt_since_action, time_remaining, scene.obstacles_, scene.park_place_)                                                                      
             distances_total += car.distance_                        
             frame += 1            
@@ -809,12 +945,13 @@ if __name__ == "__main__":
             t1_targets = time.time()            
             eb_batch = eb[indexes]
             eb_batch_range = np.arange(m)
-            states = np.array(list(eb_batch[:, 0]))            
-            X_batch = QL_TRANSFORMER.fit_transform(states)                      
-            qs_oracle = np.zeros((m, len(ACTION_PAIRS)), dtype=np.float64)
-            if Q_oracle is not None:
-                qs_oracle = Q_oracle.predict(X_batch)
-            y_batch = np.copy(qs_oracle)                            
+            states = np.array(list(eb_batch[:, 0]))          
+            X_batch = QL_TRANSFORMER.fit_transform(states)
+            # preliminary vectors of targets for all actions - its particular positions (related to actions taken) shall be prepared using Bellman equation 
+            qs = np.zeros((m, len(ACTION_PAIRS)), dtype=np.float64)            
+            if False and first_fit_done: # change first condition to False for non-shared architecture of Q-model (preliminary predict unnecessary then)
+                qs = Q.predict(X_batch)                
+            y_batch = np.copy(qs)                                                    
             next_states = np.array(list(eb_batch[:, 3]))
             X_batch_next = QL_TRANSFORMER.fit_transform(next_states)
             qns_oracle = np.zeros((m, len(ACTION_PAIRS)))
@@ -822,14 +959,15 @@ if __name__ == "__main__":
                 qns_oracle = Q_oracle.predict(X_batch_next)    
             qns = np.zeros((m, len(ACTION_PAIRS)))                        
             if first_fit_done:
-                qns = Q.predict(X_batch_next)                                                
-            terminals_batch = np.where(eb_batch[:, 4] == 1)[0]
+                qns = Q.predict(X_batch_next)                                                            
             actions_batch = eb_batch[:, 1].astype(int)
-            qns[terminals_batch, actions_batch[terminals_batch]] = 0.0 # only if reward for reaching target is 0.0 (then, virtual next states preserve "discounted" 0.0 reward - next max - until end of episode)
-            qns_oracle[terminals_batch, actions_batch[terminals_batch]] = 0.0 # only if reward for reaching target is 0.0 (then, virtual next states preserve "discounted" 0.0 reward - next max - until end of episode)                                
-            qns_argmaxes = np.argmax(qns, axis=1)      
-            qns_maxes = qns_oracle[np.arange(m), qns_argmaxes]                                                            
             rewards_batch = eb_batch[:, 2].astype(np.float64)
+            terminals_batch = np.where(eb_batch[:, 4] == 1)[0]
+            rewards_on_terminals_batch = np.array([rewards_batch[terminals_batch]]).T
+            qns[terminals_batch, :] = rewards_on_terminals_batch # "virtual" next states preserve rewards of terminals until end of episode (for discounted next max in Bellman equation) 
+            qns_oracle[terminals_batch, :] = rewards_on_terminals_batch # "virtual" next states preserve rewards of terminals until end of episode (for discounted next max in Bellman equation)
+            qns_argmaxes = np.argmax(qns, axis=1)      
+            qns_maxes = qns_oracle[eb_batch_range, qns_argmaxes]                                                                        
             y = rewards_batch + QL_GAMMA * qns_maxes
             y_batch[eb_batch_range, actions_batch] = y                        
             y_pred = np.zeros((m, len(ACTION_PAIRS)))
@@ -845,7 +983,7 @@ if __name__ == "__main__":
             # u_indexes = np.unique(indexes)
             # for u_index in u_indexes:
             #     u_index_where = np.where(u_indexes == u_index)[0][0]                    
-            #     eb[u_index, 5] = maes_batch_before[u_index_where]
+            #     eb[u_index, 5] = maes_batch_before[u_index_where]            
             t2_targets = time.time()
             print(f"[preparing targets on batch done; time: {t2_targets - t1_targets} s]")
             print(f"[mse on batch before fit: {mse_batch_before}]")
