@@ -10,11 +10,11 @@ CONST_PARKED_MAX_ANGLE_DEVIATION = np.pi / 16.0 # acceptable range of deviation:
 
 # CAR CONSTANTS
 CAR_ACCELERATION_MAGNITUDES_AHEAD = [0.0, 8.0]
-CAR_ACCELERATION_MAGNITUDES_BACK = [0.0, 6.0]
+CAR_ACCELERATION_MAGNITUDES_BACK = [0.0, 7.0] 
 CAR_ACCELERATION_MAGNITUDES_SIDE = [0.0, 1.0]
 CAR_LENGTH = 4.405
 CAR_WIDTH = 1.818
-CAR_MU_STATIC = 0.7 
+CAR_MU_STATIC = 0.6
 CAR_MU_KINETIC = 0.3  
 CAR_MAX_VELOCITY = 150.0 / 3.6  
 CAR_MIN_VELOCITY_TO_TURN = 0.75
@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s_da"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr_dag" # "dv_flfrblbr2s_da"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -331,6 +331,59 @@ class Car:
                 self.a_magnitude_ = np.linalg.norm(self.a_)
         
     def step(self, dt, dt_since_action, time_remaining, obstacles, park_place):                     
+        # static friction        
+        if self.v_magnitude_ == 0.0 and self.a_magnitude_ > 0.0:
+            friction_factor_static = min(self.mu_static_ * CONST_G / self.a_magnitude_, 1.0)
+            self.a_ -= friction_factor_static * self.a_   
+            self.a_magnitude_ *= 1.0 - friction_factor_static            
+        # kinetic friction
+        friction_factor_kinetic = 0.0            
+        if self.v_magnitude_ > 0.0:            
+            mu_kinetic_g_dt = self.mu_kinetic_ * CONST_G * dt
+            v_mean_magnitude = np.linalg.norm(self.v_ + 0.5 * self.a_ * dt)            
+            friction_factor_kinetic = min(mu_kinetic_g_dt / v_mean_magnitude, 1.0)                                                
+        # update position
+        self.x_ += (1.0 - friction_factor_kinetic) * (self.v_ * dt + 0.5 * self.a_ * dt**2)
+        # update velocity
+        self.v_ = (1.0 - friction_factor_kinetic) * (self.v_ + self.a_ * dt)
+        self.v_magnitude_ = np.linalg.norm(self.v_)        
+        if self.v_magnitude_ > self.max_velocity_:
+            self.v_ = self.max_velocity_ * self.v_ / self.v_magnitude_
+            self.v_magnitude_ = self.max_velocity_                
+        # update direction vectors                                 
+        if self.v_magnitude_ > 0.0:
+            d_ahead_old = self.d_ahead_              
+            self.d_ahead_ = self.v_ / self.v_magnitude_
+            if self.d_ahead_.dot(d_ahead_old) < 0.0:
+                self.d_ahead_ *= -1.0 # prevents unrealistic front-back 'flips'
+            rotation_matrix = np.array([[0.0, 1.0], [-1.0, 0.0]]) # for -pi/2
+            self.d_right_ = rotation_matrix.dot(self.d_ahead_)
+            self.angle_ahead_ = np.arctan2(self.d_ahead_[1], self.d_ahead_[0])
+            if self.angle_ahead_ < 0.0:
+                self.angle_ahead_ += 2 * np.pi                            
+        # refresh additional information
+        self.accelerations_imposed_ = [] # accelerations for current step are now consumed -> empty list for accelerations fo next step
+        self.a_ = np.array([0.0, 0.0])
+        self.a_magnitude_ = 0.0
+        self._refresh_corners()
+        self._refresh_sensors_xs()
+        self._refresh_sensors_values(obstacles)
+        self._check_collisions(obstacles)
+        if self.collided_:
+            self.v_ = np.array([0.0, 0.0]) # stop due to collision
+            self.v_magnitude_ = 0.0
+        if time_remaining - dt <= 0.0:
+            self.time_exceeded_ = True         
+        self._refresh_to_park_place_vectors(park_place)      
+        self._refresh_reward(dt_since_action)
+        # memorize some history
+        self.x_history_.append(np.copy(self.x_))
+        self.x_fl_history_.append(np.copy(self.x_fl_))
+        self.x_fr_history_.append(np.copy(self.x_fr_))
+        self.x_bl_history_.append(np.copy(self.x_bl_))        
+        self.x_br_history_.append(np.copy(self.x_br_))            
+        
+    def step_bak(self, dt, dt_since_action, time_remaining, obstacles, park_place):                     
         # static friction
         mu_static_g = self.mu_static_ * CONST_G
         if self.v_magnitude_ == 0.0 and self.a_magnitude_ > mu_static_g:
@@ -382,7 +435,7 @@ class Car:
         self.x_fl_history_.append(np.copy(self.x_fl_))
         self.x_fr_history_.append(np.copy(self.x_fr_))
         self.x_bl_history_.append(np.copy(self.x_bl_))        
-        self.x_br_history_.append(np.copy(self.x_br_))            
+        self.x_br_history_.append(np.copy(self.x_br_))        
         
     def is_stuck(self, dt):
         steps_back = int(self.antistuck_check_seconds_back_ / dt)

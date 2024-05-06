@@ -10,6 +10,8 @@ from copy import deepcopy
 from qapproximations import QRidgeRegressor, QMLPRegressor, QMLPRegressorShared
 from sklearn.preprocessing import PolynomialFeatures
 import ctypes
+import zipfile as zf
+import os
 
 # ACTIONS-, PARK PLACE-RELATED CONSTANTS
 ACCELERATION_MAGNITUDES_AHEAD = defs.CAR_ACCELERATION_MAGNITUDES_AHEAD
@@ -21,15 +23,16 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = False # if False then testing mode
-TEST_MODEL_NAME = "2354513149" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
+LEARNING_ON = True # if False then testing mode
+TEST_MODEL_NAME = None # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
 TEST_SCENE_FUNCTION_NAME = None # if None then equivalent to QL_SCENE_FUNCTION_NAME 
-TEST_RANDOM_SEED = 1 
+TEST_RANDOM_SEED = 1
 TEST_EPI_SEEDS = [] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
 TEST_N_EPISODES = 1000 
-TEST_ANIMATION_ON = True
+TEST_ANIMATION_ON = False
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
+FOLDER_MODELS_ZIPPED = "../models_zipped/"
 FOLDER_EXTRAS = "../extras/"
 EXPERIENCE_BUFFER_MAX_SIZE = int(5 * 10**7)
 LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY = 0.995
@@ -83,7 +86,7 @@ QL_ORACLE_SWITCH_GAP_EPISODES = 500
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi" # TODO "pp_middle_obstacles_oppdist_1_side_10_angle_pi"  
+QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi"  
 QL_TRANSFORMER = TRANSFORMERS["poly_1"]
 QL_APPROXIMATOR = APPROXIMATORS["qmlp_small"] # "qmlp_small"
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
@@ -187,7 +190,7 @@ def pickle_all(fname, some_list):
     pickle.dump(some_list, f, protocol=pickle.HIGHEST_PROTOCOL)
     f.close()
     t2 = time.time()
-    print("PICKLE DONE. [time: " + str(t2 - t1) + " s]")
+    print(f"PICKLE DONE. [time: {t2 - t1} s]")
 
 def unpickle_all(fname):
     print(f"UNPICKLE... [{fname}]")
@@ -196,9 +199,28 @@ def unpickle_all(fname):
     some_list = pickle.load(f)
     f.close()
     t2 = time.time()
-    print("UNPICKLE DONE. [time: " + str(t2 - t1) + " s]")
+    print(f"UNPICKLE DONE. [time: {t2 - t1} s]")
     return some_list
 
+def zip_models():
+    print(f"ZIP MODELS...")
+    t1 = time.time()
+    dir_list = os.listdir(FOLDER_MODELS)
+    models_dict = {}
+    for fname in dir_list:
+        prefix = fname[:fname.find("_")]
+        if prefix not in models_dict:
+            models_dict[prefix] = []
+        models_dict[prefix].append(fname)    
+    for key in models_dict:                                 
+        for fname in models_dict[key]:            
+            fpath = FOLDER_MODELS + fname
+            target_path = FOLDER_MODELS_ZIPPED + fname + ".zip"
+            print(f"[zipping file {fpath} to {target_path}]")
+            with zf.ZipFile(target_path, mode="w", compression=zf.ZIP_BZIP2) as archive:
+                archive.write(fpath, arcname=fname)            
+    t2 = time.time()
+    print(f"ZIP MODELS DONE. [time: {t2 - t1} s]")         
 
 def draw_dashed_line(surface, color, start_pos, end_pos, dash_length=4):
     x1, y1 = start_pos
@@ -658,7 +680,7 @@ def scene_pp_middle_obstacles_oppdist_05_side_10_angle_pi():
                   ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist - 1 * PARK_PLACE_WIDTH]) + o_shift, ppfl + np.array([PARK_PLACE_LENGTH, -o_pp_dist]) + o_shift])                        
         ]    
     scene = Scene(car, park_place, obstacles)
-    return scene
+    return scene 
 
 
 # MAIN
@@ -798,7 +820,7 @@ if __name__ == "__main__":
                     experience[0, 5] = 0.0 # Bellman error (for the case of prioritized experience replay, updataeble after fits)                   
                     epi_eb[epi_eb_size] = experience
                     epi_eb_size += 1
-                    if False and terminal: # additional experiences (currently off) for terminal states -> no matter what action taken in them, the next state and reward state the same (for targets preparation purposes in ML)
+                    if False and terminal: # additional experiences (currently off) for terminal states -> no matter what action taken in them, the next state and reward stay the same (for targets preparation purposes in ML)
                         for a in range(len(ACTION_PAIRS)):
                             experience = np.empty((1, 6), dtype=object)
                             experience[0, 0] = next_state
