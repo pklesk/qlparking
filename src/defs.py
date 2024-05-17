@@ -24,7 +24,7 @@ CAR_N_SENSORS_BACK = 3
 CAR_N_SENSORS_SIDES = 1
 CAR_ANTISTUCK_CHECK_RADIUS = 0.25
 CAR_ANTISTUCK_CHECK_SECONDS_BACK = 3.0
-CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr_dag" # "dv_flfrblbr2s_da"
+CAR_STATE_REPR_FUNCTION_NAME = "dv_flfrblbr2s_dag_invariant" # "dv_flfrblbr2s_da"
 
 # PARK PLACE CONSTANTS
 PARK_PLACE_LENGTH = 6.10
@@ -299,7 +299,32 @@ class Car:
         tpp_bl2_invariant = rotation_matrix.dot(self.to_park_place_bl2_)
         tpp_br2_invariant = rotation_matrix.dot(self.to_park_place_br2_)
         return np.concatenate((d_ahead_invariant, v_invariant, tpp_fl2_invariant, tpp_fr2_invariant, tpp_bl2_invariant, tpp_br2_invariant, np.array([self.distance_, self.angle_distance_]), 
-                               self.sensors_front_values_, self.sensors_back_values_, self.sensors_left_values_, self.sensors_right_values_))           
+                               self.sensors_front_values_, self.sensors_back_values_, self.sensors_left_values_, self.sensors_right_values_))
+        
+    def _state_repr_dv_flfrblbr2s_dag_invariant(self): # invariant w.r.t. park place rotation (assuming models trained on reference park place direction [-1.0, 0.0]) 
+        d_main = -self.to_park_place_d_ahead_ # minus due to models trained on fixed park place with reference d_ahead = [-1.0, 0.0] (should correspond to angle 0.0, hence the minus to convert it to [1.0, 0.0] before arctan2) 
+        angle = -np.arctan2(d_main[1], d_main[0])
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        d_ahead_invariant = rotation_matrix.dot(self.d_ahead_)
+        v_invariant = rotation_matrix.dot(self.v_)
+        tpp_fl2_invariant = rotation_matrix.dot(self.to_park_place_fl2_)
+        tpp_fr2_invariant = rotation_matrix.dot(self.to_park_place_fr2_)
+        tpp_bl2_invariant = rotation_matrix.dot(self.to_park_place_bl2_)
+        tpp_br2_invariant = rotation_matrix.dot(self.to_park_place_br2_)
+        return np.concatenate((d_ahead_invariant, v_invariant, tpp_fl2_invariant, tpp_fr2_invariant, tpp_bl2_invariant, tpp_br2_invariant, np.array([self.distance_, self.angle_distance_, self.gutter_distance_])))                   
+       
+    def _state_repr_dv_flfrblbr2s_dag_invariant_sensors(self): # invariant w.r.t. park place rotation (assuming models trained on reference park place direction [-1.0, 0.0]) 
+        d_main = -self.to_park_place_d_ahead_ # minus due to models trained on fixed park place with reference d_ahead = [-1.0, 0.0] (should correspond to angle 0.0, hence the minus to convert it to [1.0, 0.0] before arctan2) 
+        angle = -np.arctan2(d_main[1], d_main[0])
+        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        d_ahead_invariant = rotation_matrix.dot(self.d_ahead_)
+        v_invariant = rotation_matrix.dot(self.v_)
+        tpp_fl2_invariant = rotation_matrix.dot(self.to_park_place_fl2_)
+        tpp_fr2_invariant = rotation_matrix.dot(self.to_park_place_fr2_)
+        tpp_bl2_invariant = rotation_matrix.dot(self.to_park_place_bl2_)
+        tpp_br2_invariant = rotation_matrix.dot(self.to_park_place_br2_)
+        return np.concatenate((d_ahead_invariant, v_invariant, tpp_fl2_invariant, tpp_fr2_invariant, tpp_bl2_invariant, tpp_br2_invariant, np.array([self.distance_, self.angle_distance_, self.gutter_distance_]), 
+                               self.sensors_front_values_, self.sensors_back_values_, self.sensors_left_values_, self.sensors_right_values_))       
        
     def get_state(self):
         return self.state_repr_function()

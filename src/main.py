@@ -23,9 +23,9 @@ PARK_PLACE_LENGTH = defs.PARK_PLACE_LENGTH
 PARK_PLACE_WIDTH = defs.PARK_PLACE_WIDTH
 
 # MAIN SETTINGS: LEARNING OR TESTING
-LEARNING_ON = True # if False then testing mode
-TEST_MODEL_NAME = None # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
-TEST_SCENE_FUNCTION_NAME = None # if None then equivalent to QL_SCENE_FUNCTION_NAME 
+LEARNING_ON = False # if False then testing mode
+TEST_MODEL_NAME = "0623865367" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
+TEST_SCENE_FUNCTION_NAME = "pp_random_car_random_side_20" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
 TEST_RANDOM_SEED = 1
 TEST_EPI_SEEDS = [] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
 TEST_N_EPISODES = 1000 
@@ -79,16 +79,16 @@ QL_EPS_MIN = 0.1
 QL_EPS_MIN_AT_EPISODE = QL_N_EPISODES
 QL_FIT_GAP_EPISODES = 20
 QL_FIRST_FIT_AT_EPISODE = 200 
-QL_FIT_BATCH_SIZE = 1 * 65536
+QL_FIT_BATCH_SIZE = 4 * 65536
 QL_ORACLE_SWITCHING = True
 QL_ORACLE_FIRST_SWITCH_AFTER_EPISODE = 1000
 QL_ORACLE_SWITCH_GAP_EPISODES = 500  
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "pp_west_side_10_angle_halfpi"  
+QL_SCENE_FUNCTION_NAME = "pp_middle_side_20_angle_twopi", "pp_west_side_10_angle_halfpi"  
 QL_TRANSFORMER = TRANSFORMERS["poly_1"]
-QL_APPROXIMATOR = APPROXIMATORS["qmlp_small"] # "qmlp_small"
+QL_APPROXIMATOR = APPROXIMATORS["qmlp_large"] # "qmlp_small"
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
 
 # DRAWING CONSTANTS
@@ -212,11 +212,11 @@ def zip_models():
         if prefix not in models_dict:
             models_dict[prefix] = []
         models_dict[prefix].append(fname)    
-    for key in models_dict:                                 
+    for i, key in enumerate(models_dict):                                 
         for fname in models_dict[key]:            
             fpath = FOLDER_MODELS + fname
             target_path = FOLDER_MODELS_ZIPPED + fname + ".zip"
-            print(f"[zipping file {fpath} to {target_path}]")
+            print(f"[{i + 1}/{len(models_dict)}: zipping file {fpath} to {target_path}]")
             with zf.ZipFile(target_path, mode="w", compression=zf.ZIP_BZIP2) as archive:
                 archive.write(fpath, arcname=fname)            
     t2 = time.time()
