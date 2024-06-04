@@ -27,17 +27,17 @@ LEARNING_ON = False # if False then testing mode
 TEST_MODEL_NAME = "0623865367" # string name equal to hash code e.g. "2354513149"(without "_q.bin" suffix)
 TEST_SCENE_FUNCTION_NAME = "pp_random_car_random_side_20" # if None then equivalent to QL_SCENE_FUNCTION_NAME 
 TEST_RANDOM_SEED = 1
-TEST_EPI_SEEDS = [] # list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
+TEST_EPI_SEEDS = []# list of test seeds for demo, if not specified then TEST_RANDOM_SEED applied to generate seeds for episodes
 TEST_N_EPISODES = 1000 
-TEST_ANIMATION_ON = False
+TEST_ANIMATION_ON = True
 TEST_EPS = 0.0
 FOLDER_MODELS = "../models/"
 FOLDER_MODELS_ZIPPED = "../models_zipped/"
 FOLDER_EXTRAS = "../extras/"
 EXPERIENCE_BUFFER_MAX_SIZE = int(5 * 10**7)
 LEARNING_QUALITY_OBSERVATIONS_EMAS_DECAY = 0.995
-DEMO_TITLE_LINE_1 = None
-DEMO_TITLE_LINE_2 = None
+DEMO_TITLE_LINE_1 = "TESTING STAGE"
+DEMO_TITLE_LINE_2 = "(ANY INITIAL POSITION AND ANGLE FOR PARK PLACE AND CAR WITHIN 20m x 20m)"
 
 # DICTIONARIES OF PREDEFINED: TRANSFORMERS, APPROXIMATORS
 TRANSFORMERS = {
@@ -86,7 +86,7 @@ QL_ORACLE_SWITCH_GAP_EPISODES = 500
 QL_ORACLE_SLOW_UPDATES_DECAY = 1.0 # 1.0 means no slow updates take place (only hard switching)
 QL_ANTISTUCK_NUDGE = True
 QL_ANTISTUCK_NUDGE_STEERING_STEPS = 2
-QL_SCENE_FUNCTION_NAME = "pp_middle_side_20_angle_twopi", "pp_west_side_10_angle_halfpi"  
+QL_SCENE_FUNCTION_NAME = "pp_middle_side_20_angle_twopi"   
 QL_TRANSFORMER = TRANSFORMERS["poly_1"]
 QL_APPROXIMATOR = APPROXIMATORS["qmlp_large"] # "qmlp_small"
 QL_INITIAL_MODEL_NAME = None # for incremental learning, without extension
@@ -688,8 +688,11 @@ if __name__ == "__main__":
             
     print("CAR PARKING EXPERIMENT...")
     ehs = experiment_hash_str() 
-    print(f"EXPERIMENT HASH: {ehs}")
-    print(f"EXPERIMENT MODE: " + ("LEARNING" if LEARNING_ON else f"TESTING [test model name: {TEST_MODEL_NAME}]"))
+    print(f"EXPERIMENT HASH: {ehs}") 
+    if not LEARNING_ON and TEST_SCENE_FUNCTION_NAME == None:
+        print(f"EXPERIMENT MODE: " + ("LEARNING" if LEARNING_ON else f"TESTING [test model name: {TEST_MODEL_NAME}]"))
+    else:
+        print(f"EXPERIMENT MODE: " + ("LEARNING" if LEARNING_ON else f"TESTING [test model name: {TEST_MODEL_NAME}, test scene function name: {TEST_SCENE_FUNCTION_NAME}]"))
     print(f"EXPERIMENT PARAMETERS:\n {dict_to_str(experiment_params())}")
     
     if SCREEN_RESOLUTION_DPI_AWARE:
@@ -1042,7 +1045,7 @@ if __name__ == "__main__":
             if Q_oracle is None or not QL_ORACLE_SLOW_UPDATES_DECAY < 1.0:
                 print("[switching Q_target...]")         
                 Q_oracle = deepcopy(Q)
-                print("[switching Q_target done.]")                                    
+                print("[switching Q_target done.]")
         eps = max(QL_EPS_MIN, QL_EPS_MAX - (epi + 1) / (QL_EPS_MIN_AT_EPISODE - 1) * (QL_EPS_MAX - QL_EPS_MIN)) 
         t2_loop_body = time.time()            
         print(f"[whole loop body time: {t2_loop_body - t1_loop_body} s]")
