@@ -80,7 +80,7 @@
     </tr>    
 </table>
 
-### First trials with obstacles and sensors - model: `0761736806` (scene: `"pp_middle_obstacles_oppdist_1_side_10_angle_pi"`, representation `"dv_flfrblbr2s_da_invariant_sensors`")
+### First trials with obstacles and sensors - model: `2914586007` (scene: `"pp_middle_obstacles_oppdist_1_side_10_angle_pi"`, representation `"dv_flfrblbr2s_dag_invariant_sensors`")
 
 <table>
    <tr>
