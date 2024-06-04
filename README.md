@@ -40,21 +40,10 @@
       <td align="center">demo 9:</td>
    </tr>   
    <tr>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/91c950d7-5dfe-490a-8118-284621c34b4c"><img src="https://github.com/pklesk/qlparking/assets/23095311/ce913a11-1918-411c-8ad1-1dd2433fd59f"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/44c9f0b5-4a65-4449-b422-f84e39536865"><img src="https://github.com/pklesk/qlparking/assets/23095311/b5a045c1-31b2-4d1c-a78c-e3cfc54fe098"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/a0e0400c-1062-4f77-b7dc-5d269b94d2b2"><img src="https://github.com/pklesk/qlparking/assets/23095311/1546797b-a26d-4dd9-9e5f-ff45e561842f"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/1a8d0810-46b4-4134-915e-f01dcafd30e6"><img src="https://github.com/pklesk/qlparking/assets/23095311/08fbdfbe-2820-431d-8c1e-639ed2f5b1c0"/></a></td>
     </tr>
-   <tr>
-      <td align="center">demo 10:</td>
-      <td align="center">demo 11:</td>
-      <td align="center">demo 12:</td>
-   </tr>   
-   <tr>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/6dfd0204-acb2-4420-97ee-e079b664d2c1"><img src="https://github.com/pklesk/qlparking/assets/23095311/4c01d35b-ef49-4375-b2b6-941c5de988f2"/></a></td>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/50029e8c-327d-4652-8f82-b1bfbd559c5b"><img src="https://github.com/pklesk/qlparking/assets/23095311/00bf89b4-6115-4238-94e2-710fb804c8e6"/></a></td>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/fcb896a3-131c-4d32-b14e-ef5f66fdbf0f"><img src="https://github.com/pklesk/qlparking/assets/23095311/f2dfb92b-ade9-41bb-a252-be71e3202697"></a></td>
-    </tr>   
-</table>
 
 ### Model: `4123751078` (scene: `"pp_middle_side_20_angle_twopi"`, 360° range for initial random angles)
 
