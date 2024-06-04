@@ -28,7 +28,7 @@
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/7a4fb0bc-4368-4689-8135-3276233b352e"><img src="https://github.com/pklesk/qlparking/assets/23095311/eb56e614-f99a-4ad1-b8ec-76f270f2e02c"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/0ec3bf22-6dd0-42fb-b030-ee717318340a"><img src="https://github.com/pklesk/qlparking/assets/23095311/abaff328-c343-492c-8e0a-3d9b59b7ffde"/></a></td>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/dad27043-045c-42b6-ba22-ab7041be2088"><img src="https://github.com/pklesk/qlparking/assets/23095311/e351ea7e-71c9-446e-8602-743a95b6bce3"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/cc0e47d6-775c-4f14-aec1-ff5a50280700"><img src="https://github.com/pklesk/qlparking/assets/23095311/f12eb69a-1bca-45c6-90bf-24f62cb6b20a"/></a></td>
     </tr>    
 </table>
 
