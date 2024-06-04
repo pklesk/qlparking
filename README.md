@@ -74,7 +74,7 @@
       <td align="center">demo 15:</td>
    </tr>   
    <tr>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/f7ee3714-729d-492a-b14c-7ee585e6c17f"><img src="https://github.com/pklesk/qlparking/assets/23095311/a27fe369-e30f-4ed6-a74c-8e12efaedea3"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/c6a85fa5-835e-4c95-a5ae-aa4e967efb6e"><img src="https://github.com/pklesk/qlparking/assets/23095311/a27fe369-e30f-4ed6-a74c-8e12efaedea3"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/2d4ae11e-4ea7-44a9-b7dc-c6faa89336eb"><img src="https://github.com/pklesk/qlparking/assets/23095311/54065428-ada1-455d-a092-c904fb0955b9"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/8f92564c-db8e-4791-a0ea-ed272c7f0019"><img src="https://github.com/pklesk/qlparking/assets/23095311/ac0d3e1d-2e86-4770-b793-ce7623ad9642"/></a></td>
     </tr>    
