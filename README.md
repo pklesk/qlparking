@@ -46,18 +46,18 @@
     </tr>
 </table>   
 
-### Model: `4123751078` (scene: `"pp_middle_side_20_angle_twopi"`, 360° range for initial random angles)
+### Model: `0623865367` (scene: `"pp_middle_side_20_angle_twopi"`, 360° range for initial random angles)
 
 #### Testing stage - generalization after 10k episodes
 
 <table>
    <tr>
-      <td align="center">demo 13:</td>
+      <td align="center">demo 10:</td>
       <td align="center">demo 14:</td>
       <td align="center">demo 15:</td>
    </tr>   
    <tr>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/b65d6a0e-a4fb-4dda-a1dd-7d60a2a8fe86"><img src="https://github.com/pklesk/qlparking/assets/23095311/7e817c05-351a-4072-89f5-cd1e6be824b8"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/dafbeaa7-0993-4ade-a761-d8452a615987"><img src="https://github.com/pklesk/qlparking/assets/23095311/e03feb58-8436-431e-9f34-24a861a49111"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/866305e6-2b66-4ed1-99c3-9b17a20c96ba"><img src="https://github.com/pklesk/qlparking/assets/23095311/11825a29-8438-4644-9bcb-7b7c87e607cd"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/fd24bf1d-842f-4ff2-aef7-8d6bb01500f7"><img src="https://github.com/pklesk/qlparking/assets/23095311/736a0441-58a8-4e5f-8b8d-0fb0162582ac"/></a></td>
     </tr>    
