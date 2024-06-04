@@ -54,16 +54,16 @@
    <tr>
       <td align="center">demo 10:</td>
       <td align="center">demo 11:</td>
-      <td align="center">demo 15:</td>
+      <td align="center">demo 12:</td>
    </tr>   
    <tr>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/dafbeaa7-0993-4ade-a761-d8452a615987"><img src="https://github.com/pklesk/qlparking/assets/23095311/e03feb58-8436-431e-9f34-24a861a49111"/></a></td>
       <td><a href="https://github.com/pklesk/qlparking/assets/23095311/fe9171a2-3ea3-4dc3-9714-a83c5aa7c5ce"><img src="https://github.com/pklesk/qlparking/assets/23095311/d2241d03-9de5-4c9a-9438-07d75c49e79e"/></a></td>
-      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/fd24bf1d-842f-4ff2-aef7-8d6bb01500f7"><img src="https://github.com/pklesk/qlparking/assets/23095311/736a0441-58a8-4e5f-8b8d-0fb0162582ac"/></a></td>
+      <td><a href="https://github.com/pklesk/qlparking/assets/23095311/c48748e4-fee8-4452-a938-619e44d3de28"><img src="https://github.com/pklesk/qlparking/assets/23095311/b2150e4a-c2b0-4250-98bd-e63fe244ef99"/></a></td>
     </tr>    
 </table>
 
-### Model: `4123751078` (scene: `"pp_random_car_random_side_20"`, 360° range also for initial random angles of park place, state representation switched from `"dv_flfrblbr2s_da"` to `"dv_flfrblbr2s_da_invariant`")
+### Model: `0623865367` (scene: `"pp_random_car_random_side_20"`, 360° range also for initial random angles of park place, state representation switched from `"dv_flfrblbr2s_dag"` to `"dv_flfrblbr2s_dag_invariant`")
 
 #### Testing stage - generalization after 10k episodes
 
